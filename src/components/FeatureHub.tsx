@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, Trophy, Share2, Snowflake, Award, Sparkles } from 'lucide-react';
+import { Bot, Trophy, Share2, Snowflake, Award } from 'lucide-react';
 
 interface FeatureHubProps {
   onOpenAICoach: () => void;
@@ -26,8 +26,10 @@ export const FeatureHub: React.FC<FeatureHubProps> = ({
     {
       id: 'ai-coach',
       title: 'AI Coach',
+      mobileLabel: 'AI Coach',
       subtitle: 'Diagnosis & Tips',
-      badge: 'Personal AI',
+      badge: 'AI',
+      desktopBadge: 'Personal AI',
       badgeClass: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/25',
       iconBoxClass: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
       glowClass: 'hover:border-purple-500/40 hover:shadow-purple-500/5 from-purple-500/5 to-transparent',
@@ -37,8 +39,10 @@ export const FeatureHub: React.FC<FeatureHubProps> = ({
     {
       id: 'leaderboard',
       title: 'Peringkat',
+      mobileLabel: 'Peringkat',
       subtitle: 'Komunitas Global',
-      badge: `Rank #${userRank}`,
+      badge: `#${userRank}`,
+      desktopBadge: `Rank #${userRank}`,
       badgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
       iconBoxClass: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
       glowClass: 'hover:border-amber-500/40 hover:shadow-amber-500/5 from-amber-500/5 to-transparent',
@@ -48,8 +52,10 @@ export const FeatureHub: React.FC<FeatureHubProps> = ({
     {
       id: 'share',
       title: 'Bagikan',
+      mobileLabel: 'Bagikan',
       subtitle: 'Kartu Progres HD',
-      badge: 'Story & Post',
+      badge: 'HD',
+      desktopBadge: 'Story & Post',
       badgeClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/25',
       iconBoxClass: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
       glowClass: 'hover:border-emerald-500/40 hover:shadow-emerald-500/5 from-emerald-500/5 to-transparent',
@@ -59,8 +65,10 @@ export const FeatureHub: React.FC<FeatureHubProps> = ({
     {
       id: 'freeze',
       title: 'Streak Freeze',
+      mobileLabel: 'Freeze',
       subtitle: 'Proteksi Rekor',
-      badge: `${freezeCount} Es`,
+      badge: `${freezeCount}`,
+      desktopBadge: `${freezeCount} Es`,
       badgeClass: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/25',
       iconBoxClass: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
       glowClass: 'hover:border-cyan-500/40 hover:shadow-cyan-500/5 from-cyan-500/5 to-transparent',
@@ -70,8 +78,10 @@ export const FeatureHub: React.FC<FeatureHubProps> = ({
     {
       id: 'badges',
       title: 'Lencana',
+      mobileLabel: 'Lencana',
       subtitle: 'Pencapaian',
-      badge: `${unlockedBadgesCount} Terbuka`,
+      badge: `${unlockedBadgesCount}`,
+      desktopBadge: `${unlockedBadgesCount} Terbuka`,
       badgeClass: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/25',
       iconBoxClass: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
       glowClass: 'hover:border-indigo-500/40 hover:shadow-indigo-500/5 from-indigo-500/5 to-transparent',
@@ -82,30 +92,39 @@ export const FeatureHub: React.FC<FeatureHubProps> = ({
 
   return (
     <section aria-label="Pusat Fitur Unggulan" className="w-full">
-      {/* Mobile: Horizontal Smooth Scrolling Carousel | Desktop: 5-Col Grid */}
-      <div className="flex sm:grid sm:grid-cols-5 gap-2.5 sm:gap-3.5 overflow-x-auto pb-2 sm:pb-0 scrollbar-none snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* Symmetrical 5-Column Grid on both Mobile and Desktop (100% Balanced, No Cutoff) */}
+      <div className="grid grid-cols-5 gap-1.5 sm:gap-3.5 w-full">
         {hubs.map((hub) => (
           <button
             key={hub.id}
             type="button"
             onClick={hub.onClick}
-            className={`flex-shrink-0 w-[140px] sm:w-auto snap-start group relative p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-border/80 bg-gradient-to-b bg-card ${hub.glowClass} text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`}
+            className={`group relative p-2 sm:p-4 rounded-xl sm:rounded-3xl border border-border/80 bg-gradient-to-b bg-card ${hub.glowClass} flex flex-col items-center sm:items-start text-center sm:text-left transition-all duration-300 hover:-translate-y-0.5 sm:hover:-translate-y-1 hover:shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <div className={`p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border ${hub.iconBoxClass} shadow-xs transition-transform duration-300 group-hover:scale-110`}>
+            {/* Top row on Desktop / Centered Icon on Mobile */}
+            <div className="relative flex items-center justify-between w-full mb-1 sm:mb-2.5">
+              <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl border ${hub.iconBoxClass} shadow-xs mx-auto sm:mx-0 transition-transform duration-300 group-hover:scale-110`}>
                 {hub.icon}
               </div>
-              <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-full border ${hub.badgeClass}`}>
+
+              {/* Desktop Full Badge */}
+              <span className={`hidden sm:inline text-[10px] font-black px-2 py-0.5 rounded-full border ${hub.badgeClass}`}>
+                {hub.desktopBadge}
+              </span>
+
+              {/* Mobile Micro Badge (Floating on icon) */}
+              <span className={`sm:hidden absolute -top-1 -right-0.5 text-[8px] font-black px-1.5 py-0.2 rounded-full border ${hub.badgeClass}`}>
                 {hub.badge}
               </span>
             </div>
 
-            <div className="space-y-0.5">
-              <h3 className="font-bold text-xs sm:text-sm text-foreground tracking-tight flex items-center gap-1 group-hover:text-primary transition-colors">
-                <span className="truncate">{hub.title}</span>
-                <Sparkles className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-amber-400 hidden sm:inline" />
+            {/* Labels */}
+            <div className="w-full space-y-0.5">
+              <h3 className="font-bold text-[10px] sm:text-sm text-foreground tracking-tight truncate group-hover:text-primary transition-colors">
+                <span className="sm:hidden">{hub.mobileLabel}</span>
+                <span className="hidden sm:inline">{hub.title}</span>
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1 font-medium">
+              <p className="text-[11px] text-muted-foreground line-clamp-1 font-medium hidden sm:block">
                 {hub.subtitle}
               </p>
             </div>
