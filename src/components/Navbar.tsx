@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Activity, Plus, Moon, Sun, Flame, Trophy, Volume2, VolumeX, 
-  Database, Bell, BellOff, Check, User, Cloud, Snowflake, Share2 
+  Database, Bell, BellOff, Check, User, Cloud, Snowflake, Share2, Bot 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
@@ -15,6 +15,7 @@ interface NavbarProps {
   onOpenAuthModal: () => void;
   onOpenFreezeModal: () => void;
   onOpenShareModal: () => void;
+  onOpenAICoachModal: () => void;
   freezeCount: number;
   userEmail?: string | null;
   isMuted: boolean;
@@ -33,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuthModal,
   onOpenFreezeModal,
   onOpenShareModal,
+  onOpenAICoachModal,
   freezeCount,
   userEmail,
   isMuted,
@@ -89,6 +91,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Flame className="h-4 w-4 fill-amber-500 text-amber-500 animate-pulse" />
             <span>{streakCount} Hari Streak</span>
           </div>
+
+          {/* AI Coach Button */}
+          <button
+            type="button"
+            onClick={onOpenAICoachModal}
+            aria-label="Buka AI Habit Coach"
+            title="Diagnosis Performa & Rekomendasi Kebiasaan AI"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Bot className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">AI Coach</span>
+          </button>
 
           {/* Share Poster Card Button */}
           <button

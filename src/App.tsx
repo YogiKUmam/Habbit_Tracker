@@ -11,6 +11,7 @@ import { DailyNotesModal } from './components/DailyNotesModal';
 import { HabitTimerModal } from './components/HabitTimerModal';
 import { StreakFreezeModal } from './components/StreakFreezeModal';
 import { ShareCardModal } from './components/ShareCardModal';
+import { AICoachModal } from './components/AICoachModal';
 import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
@@ -18,6 +19,7 @@ import { sound } from './lib/sound';
 import { supabase } from './lib/supabase';
 import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
+import { RecommendedHabit } from './lib/aiCoach';
 import { 
   loadHabits, loadLogs, loadFreezeState, saveFreezeState, 
   getTodayString, calculateHabitStreak, calculateGlobalStats, 
@@ -43,6 +45,7 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isAICoachModalOpen, setIsAICoachModalOpen] = useState(false);
   const [shareTargetHabit, setShareTargetHabit] = useState<Habit | null>(null);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
@@ -281,6 +284,29 @@ export function App() {
     await activeAdapter.saveHabits(updated);
   };
 
+  // Add Recommended Habit from AI Coach
+  const handleAddRecommendedHabit = async (rec: RecommendedHabit) => {
+    const newHabit: Habit = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `habit-ai-${Date.now()}`,
+      title: rec.title,
+      description: rec.description,
+      category: rec.category,
+      color: rec.color,
+      icon: rec.icon,
+      targetDaysPerWeek: rec.targetDaysPerWeek,
+      durationMinutes: rec.durationMinutes,
+      timerEnabled: true,
+      activeDays: [0, 1, 2, 3, 4, 5, 6],
+      archived: false,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [newHabit, ...habits];
+    setHabits(updated);
+    await activeAdapter.saveHabits(updated);
+    sound.playUnlockBadge();
+    triggerStreakConfetti();
+  };
+
   // Save Daily Reflection Note
   const handleSaveNote = async (habitId: string, noteText: string) => {
     const existingLogIndex = logs.findIndex((l) => l.habitId === habitId && l.date === todayStr);
@@ -348,6 +374,7 @@ export function App() {
           setShareTargetHabit(null);
           setIsShareModalOpen(true);
         }}
+        onOpenAICoachModal={() => setIsAICoachModalOpen(true)}
         freezeCount={freezeState.availableFreezes}
         userEmail={userEmail}
         isMuted={isMuted}
@@ -540,6 +567,16 @@ export function App() {
         targetHabit={shareTargetHabit}
         heatmapData={heatmapData}
         userEmail={userEmail}
+      />
+
+      {/* 12. AI Habit Coach Modal */}
+      <AICoachModal
+        isOpen={isAICoachModalOpen}
+        onClose={() => setIsAICoachModalOpen(false)}
+        habits={habits}
+        logs={logs}
+        stats={stats}
+        onAddRecommendedHabit={handleAddRecommendedHabit}
       />
     </div>
   );
