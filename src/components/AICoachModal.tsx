@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { 
-  X, Bot, Sparkles, Flame, AlertCircle, CheckCircle2, 
+  X, Bot, Sparkles, AlertCircle, CheckCircle2, 
   Calendar, Layers, Plus, MessageSquare, ArrowRight 
 } from 'lucide-react';
 import { Habit, HabitLog, HabitStats } from '../types/habit';
