@@ -1,17 +1,35 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
 export const isSupabaseConfigured = (): boolean => {
-  return Boolean(
-    supabaseUrl && 
-    supabaseAnonKey && 
-    !supabaseUrl.includes('your-project-id') &&
-    !supabaseAnonKey.includes('your-anon-public-key')
-  );
+  try {
+    return Boolean(
+      supabaseUrl && 
+      supabaseAnonKey && 
+      supabaseUrl.startsWith('http') &&
+      !supabaseUrl.includes('your-project-id') &&
+      !supabaseAnonKey.includes('your-anon-public-key')
+    );
+  } catch {
+    return false;
+  }
 };
 
-export const supabase: SupabaseClient | null = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+let client: SupabaseClient | null = null;
+if (isSupabaseConfigured()) {
+  try {
+    client = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
+  } catch (e) {
+    console.warn('Supabase initialization failed:', e);
+    client = null;
+  }
+}
+
+export const supabase: SupabaseClient | null = client;
