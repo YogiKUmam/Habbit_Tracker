@@ -1,5 +1,9 @@
 import React from 'react';
-import { X, Flame, Trophy, Calendar, CheckCircle2, TrendingUp, Sparkles, Droplets, BookOpen, Dumbbell, Code2, Heart, Brain, Coffee, Smile } from 'lucide-react';
+import { 
+  X, Flame, Trophy, Calendar, CheckCircle2, TrendingUp, 
+  Sparkles, Droplets, BookOpen, Dumbbell, Code2, Heart, 
+  Brain, Coffee, Smile, Share2 
+} from 'lucide-react';
 import { Habit, HabitLog } from '../types/habit';
 import { calculateHabitStreak, formatDateToIndonesian } from '../lib/storage';
 
@@ -8,14 +12,21 @@ interface HabitDetailModalProps {
   logs: HabitLog[];
   isOpen: boolean;
   onClose: () => void;
+  onOpenShare?: (habit: Habit) => void;
 }
 
-export const HabitDetailModal: React.FC<HabitDetailModalProps> = ({ habit, logs, isOpen, onClose }) => {
+export const HabitDetailModal: React.FC<HabitDetailModalProps> = ({ 
+  habit, 
+  logs, 
+  isOpen, 
+  onClose,
+  onOpenShare 
+}) => {
   if (!isOpen || !habit) return null;
 
   const habitLogs = logs.filter((l) => l.habitId === habit.id && l.completed);
   const totalCompleted = habitLogs.length;
-  const streak = calculateHabitStreak(habit.id, logs);
+  const streak = calculateHabitStreak(habit.id, logs, habit);
 
   // Calculate past 4 weeks stats (28 days)
   const past4Weeks = [];
@@ -49,12 +60,11 @@ export const HabitDetailModal: React.FC<HabitDetailModalProps> = ({ habit, logs,
       last30DaysCompleted++;
     }
   }
-  const expected30Days = Math.round((habit.targetDaysPerWeek / 7) * 30);
-  const successRate = Math.min(100, Math.round((last30DaysCompleted / expected30Days) * 100));
+  const monthlyRate = Math.min(100, Math.round((last30DaysCompleted / 30) * 100));
 
-  const getIcon = (iconName: string) => {
-    const props = { className: 'h-6 w-6 text-primary' };
-    switch (iconName) {
+  const renderIcon = (name: string) => {
+    const props = { className: 'h-6 w-6' };
+    switch (name) {
       case 'Droplets': return <Droplets {...props} />;
       case 'BookOpen': return <BookOpen {...props} />;
       case 'Dumbbell': return <Dumbbell {...props} />;
@@ -63,80 +73,83 @@ export const HabitDetailModal: React.FC<HabitDetailModalProps> = ({ habit, logs,
       case 'Brain': return <Brain {...props} />;
       case 'Coffee': return <Coffee {...props} />;
       case 'Smile': return <Smile {...props} />;
-      case 'Trophy': return <Trophy {...props} />;
       default: return <Sparkles {...props} />;
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-xl p-6 bg-card border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg p-6 bg-card border border-border rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-inner">
-              {getIcon(habit.icon)}
+            <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+              {renderIcon(habit.icon)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold text-primary px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                  {habit.category}
-                </span>
-                <span className="text-xs text-muted-foreground">Target: {habit.targetDaysPerWeek}x / minggu</span>
-              </div>
-              <h2 className="text-lg font-bold text-foreground mt-0.5">{habit.title}</h2>
+              <h2 className="text-lg font-bold text-foreground">{habit.title}</h2>
+              <span className="text-xs text-muted-foreground font-medium">
+                {habit.category} • Target {habit.targetDaysPerWeek}x / minggu
+              </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup modal"
-            className="p-2 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          
+          <div className="flex items-center gap-1.5">
+            {onOpenShare && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenShare(habit);
+                }}
+                title="Bagikan Pencapaian Kartu Ini"
+                className="p-2 rounded-xl text-amber-500 hover:bg-amber-500/10 border border-amber-500/20 transition-colors flex items-center gap-1 text-xs font-semibold"
+              >
+                <Share2 className="h-4 w-4" />
+                <span className="hidden sm:inline">Bagikan</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* 3 Main Stat Metric Highlights */}
         <div className="grid grid-cols-3 gap-3 my-4">
-          <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border text-center">
-            <div className="flex items-center justify-center text-amber-500 mb-1">
-              <Flame className="h-4 w-4 fill-amber-500 mr-1" />
-              <span className="text-xs font-bold">Streak Aktif</span>
-            </div>
-            <span className="text-xl font-extrabold text-foreground">{streak.current}</span>
-            <span className="text-[10px] text-muted-foreground block">Hari</span>
+          <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center">
+            <Flame className="h-5 w-5 text-amber-500 mb-1" />
+            <span className="text-lg font-bold text-foreground">{streak.current} Hari</span>
+            <span className="text-[10px] text-muted-foreground font-semibold">Streak Saat Ini</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border text-center">
-            <div className="flex items-center justify-center text-violet-500 mb-1">
-              <Trophy className="h-4 w-4 mr-1" />
-              <span className="text-xs font-bold">Rekor Terbaik</span>
-            </div>
-            <span className="text-xl font-extrabold text-foreground">{streak.best}</span>
-            <span className="text-[10px] text-muted-foreground block">Hari</span>
+          <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center">
+            <Trophy className="h-5 w-5 text-indigo-500 mb-1" />
+            <span className="text-lg font-bold text-foreground">{streak.best} Hari</span>
+            <span className="text-[10px] text-muted-foreground font-semibold">Rekor Terbaik</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border text-center">
-            <div className="flex items-center justify-center text-emerald-500 mb-1">
-              <TrendingUp className="h-4 w-4 mr-1" />
-              <span className="text-xs font-bold">Success Rate</span>
-            </div>
-            <span className="text-xl font-extrabold text-foreground">{successRate}%</span>
-            <span className="text-[10px] text-muted-foreground block">30 Hari Terakhir</span>
+          <div className="p-3.5 rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center">
+            <TrendingUp className="h-5 w-5 text-emerald-500 mb-1" />
+            <span className="text-lg font-bold text-foreground">{monthlyRate}%</span>
+            <span className="text-[10px] text-muted-foreground font-semibold">30 Hari Terakhir</span>
           </div>
         </div>
 
-        {/* 4 Weeks Performance Chart */}
-        <div className="p-4 rounded-2xl bg-secondary/30 border border-border mt-3">
-          <h3 className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+        {/* 4-Week Breakdown Progress Bars */}
+        <div className="space-y-3 pt-2">
+          <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
             <Calendar className="h-4 w-4 text-primary" />
             Performa 4 Minggu Terakhir
-          </h3>
-          
-          <div className="space-y-3">
-            {past4Weeks.map((week, idx) => (
-              <div key={idx} className="space-y-1">
+          </h4>
+          <div className="space-y-2.5">
+            {past4Weeks.map((week) => (
+              <div key={week.weekLabel} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-muted-foreground">{week.weekLabel}</span>
                   <span className="font-bold text-foreground">

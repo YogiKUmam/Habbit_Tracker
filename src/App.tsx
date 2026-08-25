@@ -10,6 +10,7 @@ import { DataBackupModal } from './components/DataBackupModal';
 import { DailyNotesModal } from './components/DailyNotesModal';
 import { HabitTimerModal } from './components/HabitTimerModal';
 import { StreakFreezeModal } from './components/StreakFreezeModal';
+import { ShareCardModal } from './components/ShareCardModal';
 import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
@@ -41,6 +42,8 @@ export function App() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareTargetHabit, setShareTargetHabit] = useState<Habit | null>(null);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
   const [activeTimerHabit, setActiveTimerHabit] = useState<Habit | null>(null);
@@ -341,6 +344,10 @@ export function App() {
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenFreezeModal={() => setIsFreezeModalOpen(true)}
+        onOpenShareModal={() => {
+          setShareTargetHabit(null);
+          setIsShareModalOpen(true);
+        }}
         freezeCount={freezeState.availableFreezes}
         userEmail={userEmail}
         isMuted={isMuted}
@@ -470,6 +477,10 @@ export function App() {
         onClose={() => setSelectedDetailHabit(null)}
         habit={selectedDetailHabit}
         logs={logs}
+        onOpenShare={(h) => {
+          setShareTargetHabit(h);
+          setIsShareModalOpen(true);
+        }}
       />
 
       {/* 6. Backup & Restore Data Modal */}
@@ -515,6 +526,20 @@ export function App() {
         freezeState={freezeState}
         onToggleEquip={handleToggleFreezeEquip}
         onAddFreeze={handleAddFreeze}
+      />
+
+      {/* 11. Shareable Progress Graphic Card Modal */}
+      <ShareCardModal
+        isOpen={isShareModalOpen}
+        onClose={() => {
+          setIsShareModalOpen(false);
+          setShareTargetHabit(null);
+        }}
+        stats={stats}
+        habits={habits}
+        targetHabit={shareTargetHabit}
+        heatmapData={heatmapData}
+        userEmail={userEmail}
       />
     </div>
   );

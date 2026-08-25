@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Activity, Plus, Moon, Sun, Flame, Trophy, Volume2, VolumeX, 
-  Database, Bell, BellOff, Check, User, Cloud, Snowflake 
+  Database, Bell, BellOff, Check, User, Cloud, Snowflake, Share2 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
@@ -14,6 +14,7 @@ interface NavbarProps {
   onOpenBackupModal: () => void;
   onOpenAuthModal: () => void;
   onOpenFreezeModal: () => void;
+  onOpenShareModal: () => void;
   freezeCount: number;
   userEmail?: string | null;
   isMuted: boolean;
@@ -31,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBackupModal,
   onOpenAuthModal,
   onOpenFreezeModal,
+  onOpenShareModal,
   freezeCount,
   userEmail,
   isMuted,
@@ -87,6 +89,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Flame className="h-4 w-4 fill-amber-500 text-amber-500 animate-pulse" />
             <span>{streakCount} Hari Streak</span>
           </div>
+
+          {/* Share Poster Card Button */}
+          <button
+            type="button"
+            onClick={onOpenShareModal}
+            aria-label="Bagikan Kartu Pencapaian"
+            title="Ekspor Kartu Grafis Estetis untuk Media Sosial"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Bagikan</span>
+          </button>
 
           {/* Streak Freeze Pill Button */}
           <button
