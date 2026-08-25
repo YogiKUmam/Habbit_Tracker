@@ -70,3 +70,7 @@ create index if not exists idx_habits_user_id on public.habits (user_id);
 create index if not exists idx_habit_logs_user_id on public.habit_logs (user_id);
 create index if not exists idx_habit_logs_habit_id on public.habit_logs (habit_id);
 create index if not exists idx_habit_logs_date on public.habit_logs (date);
+
+-- 7. Enable Realtime Replication for Live Multi-Device Sync
+alter publication supabase_realtime add table public.habits;
+alter publication supabase_realtime add table public.habit_logs;

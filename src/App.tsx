@@ -66,7 +66,7 @@ export function App() {
 
     setIsMuted(sound.getIsMuted());
 
-    // Check existing Supabase session
+    // Check existing Supabase session and subscribe to Realtime sync
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         setUserEmail(session?.user?.email || null);
@@ -76,7 +76,21 @@ export function App() {
         setUserEmail(session?.user?.email || null);
       });
 
-      return () => subscription.unsubscribe();
+      // Realtime multi-device sync channel
+      const channel = supabase
+        .channel('habitflow-realtime-sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'habits' }, () => {
+          refreshData();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'habit_logs' }, () => {
+          refreshData();
+        })
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+        supabase?.removeChannel(channel);
+      };
     }
   }, []);
 
