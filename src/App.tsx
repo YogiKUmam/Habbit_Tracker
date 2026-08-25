@@ -401,7 +401,8 @@ export function App() {
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         streakCount={stats.currentStreak}
-        userLevel={userLevel.level}
+        userLevel={userLevel}
+        userName={userProfile.name}
       />
 
       {/* 2. Main Container with Fluid Spacing */}
