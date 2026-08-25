@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Activity, Plus, Moon, Sun, Flame, Trophy, Volume2, VolumeX, 
-  Database, Bell, BellOff, Check 
+  Database, Bell, BellOff, Check, User, Cloud 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
@@ -12,6 +12,8 @@ interface NavbarProps {
   onOpenAddModal: () => void;
   onOpenBadgesModal: () => void;
   onOpenBackupModal: () => void;
+  onOpenAuthModal: () => void;
+  userEmail?: string | null;
   isMuted: boolean;
   onToggleSound: () => void;
   streakCount: number;
@@ -25,6 +27,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddModal,
   onOpenBadgesModal,
   onOpenBackupModal,
+  onOpenAuthModal,
+  userEmail,
   isMuted,
   onToggleSound,
   streakCount,
@@ -131,6 +135,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="p-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none hidden sm:block"
           >
             <Database className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+          </button>
+
+          {/* User Auth / Cloud Sync Button */}
+          <button
+            type="button"
+            onClick={onOpenAuthModal}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring ${
+              userEmail
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
+                : 'border-border bg-card hover:bg-secondary text-foreground'
+            }`}
+          >
+            {userEmail ? <Cloud className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline max-w-[90px] truncate">
+              {userEmail ? userEmail.split('@')[0] : 'Masuk'}
+            </span>
           </button>
 
           {/* Theme Toggle */}

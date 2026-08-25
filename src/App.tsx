@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { StatsOverview } from './components/StatsOverview';
 import { HeatmapGrid } from './components/HeatmapGrid';
@@ -8,12 +8,14 @@ import { BadgesModal } from './components/BadgesModal';
 import { HabitDetailModal } from './components/HabitDetailModal';
 import { DataBackupModal } from './components/DataBackupModal';
 import { DailyNotesModal } from './components/DailyNotesModal';
+import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
 import { sound } from './lib/sound';
+import { supabase } from './lib/supabase';
+import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
 import { 
-  loadHabits, saveHabits, loadLogs, saveLogs, 
   getTodayString, calculateHabitStreak, calculateGlobalStats, 
   generateHeatmapData, getTheme, saveTheme 
 } from './lib/storage';
@@ -26,18 +28,33 @@ export function App() {
   const [logs, setLogs] = useState<HabitLog[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMuted, setIsMuted] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   
   // Modals state
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
-  // Initialize data on mount
+  // Active Storage Adapter
+  const activeAdapter = useMemo(() => {
+    return userEmail && supabase ? supabaseAdapter : localAdapter;
+  }, [userEmail]);
+
+  // Load Data
+  const refreshData = useCallback(async () => {
+    const loadedHabits = await activeAdapter.getHabits();
+    setHabits(loadedHabits);
+    const loadedLogs = await activeAdapter.getLogs();
+    setLogs(loadedLogs);
+  }, [activeAdapter]);
+
+  // Initialize data and Auth on mount
   useEffect(() => {
     const initialTheme = getTheme();
     setTheme(initialTheme);
@@ -49,11 +66,24 @@ export function App() {
 
     setIsMuted(sound.getIsMuted());
 
-    const loadedHabits = loadHabits();
-    setHabits(loadedHabits);
-    const loadedLogs = loadLogs(loadedHabits);
-    setLogs(loadedLogs);
+    // Check existing Supabase session
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUserEmail(session?.user?.email || null);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUserEmail(session?.user?.email || null);
+      });
+
+      return () => subscription.unsubscribe();
+    }
   }, []);
+
+  // Refresh data whenever active adapter or user changes
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
 
   // Sync theme changes
   const toggleTheme = () => {
@@ -70,6 +100,13 @@ export function App() {
   const toggleSound = () => {
     const nextMuted = sound.toggleMute();
     setIsMuted(nextMuted);
+  };
+
+  const handleSignOut = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+      setUserEmail(null);
+    }
   };
 
   const todayStr = getTodayString();
@@ -116,7 +153,7 @@ export function App() {
   const categoriesList = ['Semua', 'Health', 'Productivity', 'Mindfulness', 'Fitness', 'Learning', 'Creative'];
 
   // Toggle Habit completion for today
-  const handleToggleHabitToday = (habitId: string) => {
+  const handleToggleHabitToday = async (habitId: string) => {
     const existingLogIndex = logs.findIndex((l) => l.habitId === habitId && l.date === todayStr);
     let updatedLogs: HabitLog[];
     let isNowCompleted = false;
@@ -143,7 +180,7 @@ export function App() {
     }
 
     setLogs(updatedLogs);
-    saveLogs(updatedLogs);
+    await activeAdapter.saveLogs(updatedLogs);
 
     if (isNowCompleted) {
       sound.playCheckPop();
@@ -166,11 +203,10 @@ export function App() {
   };
 
   // Save or Update Habit
-  const handleSaveHabit = (habitData: Partial<Habit>) => {
+  const handleSaveHabit = async (habitData: Partial<Habit>) => {
+    let updated: Habit[];
     if (editingHabit) {
-      const updated = habits.map((h) => (h.id === editingHabit.id ? ({ ...h, ...habitData } as Habit) : h));
-      setHabits(updated);
-      saveHabits(updated);
+      updated = habits.map((h) => (h.id === editingHabit.id ? ({ ...h, ...habitData } as Habit) : h));
     } else {
       const newHabit: Habit = {
         id: crypto.randomUUID ? crypto.randomUUID() : `habit-${Date.now()}`,
@@ -183,15 +219,16 @@ export function App() {
         archived: false,
         createdAt: new Date().toISOString(),
       };
-      const updated = [newHabit, ...habits];
-      setHabits(updated);
-      saveHabits(updated);
+      updated = [newHabit, ...habits];
       sound.playUnlockBadge();
     }
+
+    setHabits(updated);
+    await activeAdapter.saveHabits(updated);
   };
 
   // Save Daily Reflection Note
-  const handleSaveNote = (habitId: string, noteText: string) => {
+  const handleSaveNote = async (habitId: string, noteText: string) => {
     const existingLogIndex = logs.findIndex((l) => l.habitId === habitId && l.date === todayStr);
     let updatedLogs: HabitLog[];
 
@@ -214,31 +251,28 @@ export function App() {
     }
 
     setLogs(updatedLogs);
-    saveLogs(updatedLogs);
+    await activeAdapter.saveLogs(updatedLogs);
   };
 
   // Delete Habit
-  const handleDeleteHabit = (habitId: string) => {
+  const handleDeleteHabit = async (habitId: string) => {
     const updated = habits.filter((h) => h.id !== habitId);
     setHabits(updated);
-    saveHabits(updated);
+    await activeAdapter.saveHabits(updated);
   };
 
   // Restore or Reset Data
-  const handleRestoreData = (newHabits: Habit[], newLogs: HabitLog[]) => {
+  const handleRestoreData = async (newHabits: Habit[], newLogs: HabitLog[]) => {
     setHabits(newHabits);
-    saveHabits(newHabits);
     setLogs(newLogs);
-    saveLogs(newLogs);
+    await activeAdapter.saveHabits(newHabits);
+    await activeAdapter.saveLogs(newLogs);
   };
 
-  const handleResetData = () => {
+  const handleResetData = async () => {
     localStorage.removeItem('habitflow_habits_v1');
     localStorage.removeItem('habitflow_logs_v1');
-    const freshHabits = loadHabits();
-    setHabits(freshHabits);
-    const freshLogs = loadLogs(freshHabits);
-    setLogs(freshLogs);
+    await refreshData();
   };
 
   return (
@@ -253,6 +287,8 @@ export function App() {
         }}
         onOpenBadgesModal={() => setIsBadgesModalOpen(true)}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        userEmail={userEmail}
         isMuted={isMuted}
         onToggleSound={toggleSound}
         streakCount={stats.currentStreak}
@@ -398,6 +434,14 @@ export function App() {
         habit={noteTargetHabit}
         currentNote={logs.find((l) => l.habitId === noteTargetHabit?.id && l.date === todayStr)?.note}
         onSaveNote={handleSaveNote}
+      />
+
+      {/* 8. Supabase Auth / Cloud Sync Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        userEmail={userEmail}
+        onSignOut={handleSignOut}
       />
     </div>
   );
