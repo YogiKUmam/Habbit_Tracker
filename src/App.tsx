@@ -402,7 +402,6 @@ export function App() {
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
         streakCount={stats.currentStreak}
         userLevel={userLevel.level}
-        userEmail={userEmail}
       />
 
       {/* 2. Main Container with Fluid Spacing */}
