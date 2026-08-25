@@ -9,6 +9,7 @@ import { HabitDetailModal } from './components/HabitDetailModal';
 import { DataBackupModal } from './components/DataBackupModal';
 import { DailyNotesModal } from './components/DailyNotesModal';
 import { HabitTimerModal } from './components/HabitTimerModal';
+import { StreakFreezeModal } from './components/StreakFreezeModal';
 import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
@@ -17,16 +18,18 @@ import { supabase } from './lib/supabase';
 import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
 import { 
-  loadHabits, loadLogs, getTodayString, calculateHabitStreak, calculateGlobalStats, 
+  loadHabits, loadLogs, loadFreezeState, saveFreezeState, 
+  getTodayString, calculateHabitStreak, calculateGlobalStats, 
   generateHeatmapData, getTheme, saveTheme 
 } from './lib/storage';
-import { Habit, HabitLog, Category } from './types/habit';
+import { Habit, HabitLog, Category, StreakFreezeState } from './types/habit';
 import { Filter, CheckSquare } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 
 export function App() {
   const [habits, setHabits] = useState<Habit[]>(() => loadHabits());
   const [logs, setLogs] = useState<HabitLog[]>(() => loadLogs(loadHabits()));
+  const [freezeState, setFreezeState] = useState<StreakFreezeState>(() => loadFreezeState());
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMuted, setIsMuted] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -37,6 +40,7 @@ export function App() {
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
   const [activeTimerHabit, setActiveTimerHabit] = useState<Habit | null>(null);
@@ -125,10 +129,30 @@ export function App() {
     }
   };
 
+  // Streak Freeze handlers
+  const handleToggleFreezeEquip = () => {
+    const updated: StreakFreezeState = {
+      ...freezeState,
+      isEquipped: !freezeState.isEquipped,
+    };
+    setFreezeState(updated);
+    saveFreezeState(updated);
+  };
+
+  const handleAddFreeze = () => {
+    const updated: StreakFreezeState = {
+      ...freezeState,
+      availableFreezes: freezeState.availableFreezes + 1,
+    };
+    setFreezeState(updated);
+    saveFreezeState(updated);
+    sound.playUnlockBadge();
+  };
+
   const todayStr = getTodayString();
 
   // Stats & Badges calculation
-  const stats = useMemo(() => calculateGlobalStats(habits, logs), [habits, logs]);
+  const stats = useMemo(() => calculateGlobalStats(habits, logs, freezeState), [habits, logs, freezeState]);
   const badges = useMemo(() => evaluateBadges(habits, logs, stats), [habits, logs, stats]);
   const unlockedBadgesCount = useMemo(() => badges.filter((b) => b.unlocked).length, [badges]);
 
@@ -139,7 +163,7 @@ export function App() {
       .map((h) => h.title);
   }, [habits, logs, todayStr]);
 
-  const heatmapData = useMemo(() => generateHeatmapData(habits, logs, 91), [habits, logs]);
+  const heatmapData = useMemo(() => generateHeatmapData(habits, logs, 91, freezeState), [habits, logs, freezeState]);
 
   // Past 7 days calculation helper for each habit card
   const past7DaysMeta = useMemo(() => {
@@ -242,6 +266,7 @@ export function App() {
         targetDaysPerWeek: habitData.targetDaysPerWeek || 7,
         durationMinutes: habitData.durationMinutes || 15,
         timerEnabled: true,
+        activeDays: habitData.activeDays || [0, 1, 2, 3, 4, 5, 6],
         archived: false,
         createdAt: new Date().toISOString(),
       };
@@ -298,6 +323,7 @@ export function App() {
   const handleResetData = async () => {
     localStorage.removeItem('habitflow_habits_v1');
     localStorage.removeItem('habitflow_logs_v1');
+    localStorage.removeItem('habitflow_freeze_v1');
     await refreshData();
   };
 
@@ -314,6 +340,8 @@ export function App() {
         onOpenBadgesModal={() => setIsBadgesModalOpen(true)}
         onOpenBackupModal={() => setIsBackupModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenFreezeModal={() => setIsFreezeModalOpen(true)}
+        freezeCount={freezeState.availableFreezes}
         userEmail={userEmail}
         isMuted={isMuted}
         onToggleSound={toggleSound}
@@ -385,7 +413,7 @@ export function App() {
                   );
                   const isDoneToday = !!todayLog?.completed;
                   const todayNote = todayLog?.note;
-                  const streak = calculateHabitStreak(habit.id, logs);
+                  const streak = calculateHabitStreak(habit.id, logs, habit, freezeState);
                   
                   const habit7Days = past7DaysMeta.map((day) => ({
                     date: day.date,
@@ -478,6 +506,15 @@ export function App() {
         habit={activeTimerHabit}
         onCompleteHabit={handleCompleteHabitFromTimer}
         onOpenNote={(h) => setNoteTargetHabit(h)}
+      />
+
+      {/* 10. Streak Freeze Modal */}
+      <StreakFreezeModal
+        isOpen={isFreezeModalOpen}
+        onClose={() => setIsFreezeModalOpen(false)}
+        freezeState={freezeState}
+        onToggleEquip={handleToggleFreezeEquip}
+        onAddFreeze={handleAddFreeze}
       />
     </div>
   );

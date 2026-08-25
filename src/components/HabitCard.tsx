@@ -135,6 +135,11 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               <span className="text-[11px] text-muted-foreground">
                 Target: {habit.targetDaysPerWeek}x/minggu
               </span>
+              {habit.activeDays && habit.activeDays.length < 7 && !habit.activeDays.includes(new Date().getDay()) && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border flex items-center gap-1">
+                  ☕ Hari Istirahat
+                </span>
+              )}
               {habit.durationMinutes && (
                 <span className="text-[11px] font-semibold text-emerald-500 flex items-center gap-1">
                   <Timer className="h-3 w-3" /> {habit.durationMinutes}m

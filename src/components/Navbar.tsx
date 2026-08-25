@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Activity, Plus, Moon, Sun, Flame, Trophy, Volume2, VolumeX, 
-  Database, Bell, BellOff, Check, User, Cloud 
+  Database, Bell, BellOff, Check, User, Cloud, Snowflake 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
@@ -13,6 +13,8 @@ interface NavbarProps {
   onOpenBadgesModal: () => void;
   onOpenBackupModal: () => void;
   onOpenAuthModal: () => void;
+  onOpenFreezeModal: () => void;
+  freezeCount: number;
   userEmail?: string | null;
   isMuted: boolean;
   onToggleSound: () => void;
@@ -28,6 +30,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBadgesModal,
   onOpenBackupModal,
   onOpenAuthModal,
+  onOpenFreezeModal,
+  freezeCount,
   userEmail,
   isMuted,
   onToggleSound,
@@ -83,6 +87,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Flame className="h-4 w-4 fill-amber-500 text-amber-500 animate-pulse" />
             <span>{streakCount} Hari Streak</span>
           </div>
+
+          {/* Streak Freeze Pill Button */}
+          <button
+            type="button"
+            onClick={onOpenFreezeModal}
+            aria-label="Buka Streak Freeze"
+            title="Kelola Proteksi Streak Freeze"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Snowflake className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Freeze</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] font-bold">
+              {freezeCount}
+            </span>
+          </button>
 
           {/* Badges Button */}
           <button

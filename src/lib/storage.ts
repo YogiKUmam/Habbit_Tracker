@@ -1,8 +1,11 @@
-import { Habit, HabitLog, HabitSchema, HabitLogSchema, HabitStats, DayActivity } from '../types/habit';
+import { 
+  Habit, HabitLog, HabitSchema, HabitLogSchema, HabitStats, DayActivity, StreakFreezeState 
+} from '../types/habit';
 
 const HABITS_KEY = 'habitflow_habits_v1';
 const LOGS_KEY = 'habitflow_logs_v1';
 const THEME_KEY = 'habitflow_theme_v1';
+const FREEZE_KEY = 'habitflow_freeze_v1';
 
 export function getTodayString(): string {
   const d = new Date();
@@ -23,6 +26,17 @@ export function formatDateToIndonesian(dateString: string): string {
   }).format(date);
 }
 
+// Check if a habit is scheduled on a specific date (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+export function isHabitScheduledForDate(habit: Habit, dateStr: string): boolean {
+  if (!habit.activeDays || habit.activeDays.length === 0) {
+    return true; // Default: every day
+  }
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dateObj = new Date(y, m - 1, d);
+  const dayOfWeek = dateObj.getDay();
+  return habit.activeDays.includes(dayOfWeek);
+}
+
 // Initial seed habits
 const INITIAL_HABITS: Habit[] = [
   {
@@ -33,6 +47,9 @@ const INITIAL_HABITS: Habit[] = [
     color: 'cyan',
     icon: 'Droplets',
     targetDaysPerWeek: 7,
+    durationMinutes: 5,
+    timerEnabled: true,
+    activeDays: [0, 1, 2, 3, 4, 5, 6],
     archived: false,
     createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -44,6 +61,9 @@ const INITIAL_HABITS: Habit[] = [
     color: 'violet',
     icon: 'BookOpen',
     targetDaysPerWeek: 5,
+    durationMinutes: 15,
+    timerEnabled: true,
+    activeDays: [1, 2, 3, 4, 5], // Senin-Jumat
     archived: false,
     createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -55,6 +75,9 @@ const INITIAL_HABITS: Habit[] = [
     color: 'emerald',
     icon: 'Dumbbell',
     targetDaysPerWeek: 6,
+    durationMinutes: 20,
+    timerEnabled: true,
+    activeDays: [1, 2, 3, 4, 5, 6],
     archived: false,
     createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -66,6 +89,9 @@ const INITIAL_HABITS: Habit[] = [
     color: 'blue',
     icon: 'Code2',
     targetDaysPerWeek: 5,
+    durationMinutes: 45,
+    timerEnabled: true,
+    activeDays: [1, 2, 3, 4, 5],
     archived: false,
     createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -82,11 +108,12 @@ function generateSeedLogs(habits: Habit[]): HabitLog[] {
     const dateStr = d.toISOString().split('T')[0];
 
     habits.forEach((habit, habitIdx) => {
-      // Simulate realistic consistency pattern (higher probability for older days)
-      const dayOfWeek = d.getDay(); // 0 is Sunday
+      if (!isHabitScheduledForDate(habit, dateStr)) return;
+
+      const dayOfWeek = d.getDay();
       let probability = 0.75;
       if (dayOfWeek === 0 || dayOfWeek === 6) probability = 0.55;
-      if (habitIdx === 0) probability = 0.85; // Water drink habit is very consistent
+      if (habitIdx === 0) probability = 0.85;
 
       if (Math.random() < probability) {
         logs.push({
@@ -154,37 +181,75 @@ export function saveLogs(logs: HabitLog[]): void {
   localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
 }
 
-export function calculateHabitStreak(habitId: string, logs: HabitLog[]): { current: number; best: number } {
+// Streak Freeze State Management
+export function loadFreezeState(): StreakFreezeState {
+  try {
+    const stored = localStorage.getItem(FREEZE_KEY);
+    if (!stored) {
+      const initial: StreakFreezeState = {
+        availableFreezes: 2, // 2 free freezes provided
+        usedDates: [],
+        isEquipped: true,
+      };
+      saveFreezeState(initial);
+      return initial;
+    }
+    return JSON.parse(stored);
+  } catch {
+    return { availableFreezes: 2, usedDates: [], isEquipped: true };
+  }
+}
+
+export function saveFreezeState(state: StreakFreezeState): void {
+  localStorage.setItem(FREEZE_KEY, JSON.stringify(state));
+}
+
+// Calculate Habit Streak respecting Custom Active Days and Streak Freezes
+export function calculateHabitStreak(
+  habitId: string, 
+  logs: HabitLog[], 
+  habit?: Habit,
+  freezeState?: StreakFreezeState
+): { current: number; best: number } {
   const habitLogs = logs
     .filter((l) => l.habitId === habitId && l.completed)
-    .map((l) => l.date)
-    .sort()
-    .reverse();
-
-  if (habitLogs.length === 0) return { current: 0, best: 0 };
+    .map((l) => l.date);
 
   const logSet = new Set(habitLogs);
-  const today = getTodayString();
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const frozenSet = new Set(freezeState?.usedDates || []);
 
+  const today = new Date();
   let current = 0;
-  let cursor = logSet.has(today) ? new Date(today) : logSet.has(yesterday) ? new Date(yesterday) : null;
+  let cursor = new Date(today);
 
-  if (cursor) {
-    while (true) {
-      const dateStr = cursor.toISOString().split('T')[0];
-      if (logSet.has(dateStr)) {
-        current++;
+  // Check today or yesterday starting point
+  let checkedDays = 0;
+  while (checkedDays < 365) {
+    const dateStr = cursor.toISOString().split('T')[0];
+    const isScheduled = habit ? isHabitScheduledForDate(habit, dateStr) : true;
+    const isCompleted = logSet.has(dateStr);
+    const isFrozen = frozenSet.has(dateStr);
+
+    if (isCompleted || isFrozen) {
+      current++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else if (!isScheduled) {
+      // Rest day: does not increment streak, but also does not break it!
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      // If it's today and not done yet, skip today and check yesterday before breaking
+      if (checkedDays === 0 && dateStr === getTodayString()) {
         cursor.setDate(cursor.getDate() - 1);
       } else {
-        break;
+        break; // Streak broken
       }
     }
+    checkedDays++;
   }
 
   // Calculate best historical streak
   const sortedAsc = Array.from(logSet).sort();
-  let best = 0;
+  let best = current;
   let tempStreak = 0;
   let prevDate: Date | null = null;
 
@@ -192,7 +257,7 @@ export function calculateHabitStreak(habitId: string, logs: HabitLog[]): { curre
     const currDate = new Date(dStr);
     if (prevDate) {
       const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 3600 * 24));
-      if (diffDays === 1) {
+      if (diffDays <= 2) {
         tempStreak++;
       } else {
         tempStreak = 1;
@@ -207,12 +272,19 @@ export function calculateHabitStreak(habitId: string, logs: HabitLog[]): { curre
   return { current, best: Math.max(best, current) };
 }
 
-export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]): HabitStats {
+export function calculateGlobalStats(
+  habits: Habit[], 
+  logs: HabitLog[],
+  freezeState?: StreakFreezeState
+): HabitStats {
   const activeHabits = habits.filter((h) => !h.archived);
   const today = getTodayString();
   
+  // Today's scheduled habits
+  const scheduledToday = activeHabits.filter((h) => isHabitScheduledForDate(h, today));
+
   const todayCompletedCount = logs.filter(
-    (l) => l.date === today && l.completed && activeHabits.some((h) => h.id === l.habitId)
+    (l) => l.date === today && l.completed && scheduledToday.some((h) => h.id === l.habitId)
   ).length;
 
   const totalCompletions = logs.filter((l) => l.completed).length;
@@ -221,31 +293,36 @@ export function calculateGlobalStats(habits: Habit[], logs: HabitLog[]): HabitSt
   let maxBestStreak = 0;
 
   activeHabits.forEach((habit) => {
-    const { current, best } = calculateHabitStreak(habit.id, logs);
+    const { current, best } = calculateHabitStreak(habit.id, logs, habit, freezeState);
     if (current > maxCurrentStreak) maxCurrentStreak = current;
     if (best > maxBestStreak) maxBestStreak = best;
   });
 
-  const percentage = activeHabits.length > 0 
-    ? Math.round((todayCompletedCount / activeHabits.length) * 100) 
-    : 0;
+  const targetTotal = scheduledToday.length || activeHabits.length || 1;
+  const percentage = Math.round((todayCompletedCount / targetTotal) * 100);
 
   return {
     totalHabits: activeHabits.length,
     todayCompleted: todayCompletedCount,
-    todayTotal: activeHabits.length,
-    todayPercentage: percentage,
+    todayTotal: targetTotal,
+    todayPercentage: Math.min(100, percentage),
     currentStreak: maxCurrentStreak,
     bestStreak: maxBestStreak,
     totalCompletions,
   };
 }
 
-export function generateHeatmapData(habits: Habit[], logs: HabitLog[], totalDays: number = 90): DayActivity[] {
+export function generateHeatmapData(
+  habits: Habit[], 
+  logs: HabitLog[], 
+  totalDays: number = 90,
+  freezeState?: StreakFreezeState
+): DayActivity[] {
   const activeHabits = habits.filter((h) => !h.archived);
   const totalCount = activeHabits.length || 1;
   const result: DayActivity[] = [];
   const today = new Date();
+  const frozenSet = new Set(freezeState?.usedDates || []);
 
   // Create lookup map of completed count per date
   const completedByDate = new Map<string, number>();
@@ -260,6 +337,7 @@ export function generateHeatmapData(habits: Habit[], logs: HabitLog[], totalDays
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
     const count = completedByDate.get(dateStr) || 0;
+    const isFrozen = frozenSet.has(dateStr);
     const ratio = count / totalCount;
 
     let intensity: 0 | 1 | 2 | 3 | 4 = 0;
@@ -275,6 +353,7 @@ export function generateHeatmapData(habits: Habit[], logs: HabitLog[], totalDays
       count,
       totalHabits: totalCount,
       intensity,
+      isFrozen,
     });
   }
 

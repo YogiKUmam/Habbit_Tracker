@@ -25,6 +25,8 @@ export const HabitSchema = z.object({
   // Focus / Routine Timer additions
   durationMinutes: z.number().min(1).max(180).optional(),
   timerEnabled: z.boolean().optional(),
+  // Modul 2: Custom Active Days (0 = Sunday, 1 = Monday, ... 6 = Saturday)
+  activeDays: z.array(z.number()).optional(),
 });
 export type Habit = z.infer<typeof HabitSchema>;
 
@@ -35,6 +37,7 @@ export const HabitLogSchema = z.object({
   completed: z.boolean(),
   timestamp: z.string(),
   note: z.string().optional(), // Reflection note
+  isFreezeUsed: z.boolean().optional(),
 });
 export type HabitLog = z.infer<typeof HabitLogSchema>;
 
@@ -43,6 +46,7 @@ export interface DayActivity {
   count: number;
   totalHabits: number;
   intensity: 0 | 1 | 2 | 3 | 4; // 0 = none, 1 = 1-25%, 2 = 26-50%, 3 = 51-75%, 4 = 76-100%
+  isFrozen?: boolean;
 }
 
 export interface HabitStats {
@@ -53,4 +57,10 @@ export interface HabitStats {
   currentStreak: number;
   bestStreak: number;
   totalCompletions: number;
+}
+
+export interface StreakFreezeState {
+  availableFreezes: number;
+  usedDates: string[]; // List of dates protected by freeze
+  isEquipped: boolean; // Auto-protect active
 }

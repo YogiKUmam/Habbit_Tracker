@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Sparkles, Droplets, BookOpen, Dumbbell, Code2, 
-  Heart, Brain, Coffee, Smile, Trophy, Timer 
+  Heart, Brain, Coffee, Smile, Trophy, Timer, Calendar 
 } from 'lucide-react';
 import { Habit, Category, ColorTheme } from '../types/habit';
 
@@ -37,6 +37,16 @@ const ICONS = [
 
 const DURATION_PRESETS = [5, 10, 15, 25, 45, 60];
 
+const DAYS_OF_WEEK = [
+  { id: 1, label: 'Sen' },
+  { id: 2, label: 'Sel' },
+  { id: 3, label: 'Rab' },
+  { id: 4, label: 'Kam' },
+  { id: 5, label: 'Jum' },
+  { id: 6, label: 'Sab' },
+  { id: 0, label: 'Min' },
+];
+
 export const HabitModal: React.FC<HabitModalProps> = ({
   isOpen,
   onClose,
@@ -50,6 +60,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
   const [icon, setIcon] = useState('Droplets');
   const [targetDays, setTargetDays] = useState(7);
   const [durationMinutes, setDurationMinutes] = useState<number>(15);
+  const [activeDays, setActiveDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,6 +72,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       setIcon(editingHabit.icon);
       setTargetDays(editingHabit.targetDaysPerWeek);
       setDurationMinutes(editingHabit.durationMinutes || 15);
+      setActiveDays(editingHabit.activeDays && editingHabit.activeDays.length > 0 ? editingHabit.activeDays : [0, 1, 2, 3, 4, 5, 6]);
     } else {
       setTitle('');
       setDescription('');
@@ -69,6 +81,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       setIcon('Droplets');
       setTargetDays(7);
       setDurationMinutes(15);
+      setActiveDays([0, 1, 2, 3, 4, 5, 6]);
     }
     setError(null);
   }, [editingHabit, isOpen]);
@@ -84,6 +97,32 @@ export const HabitModal: React.FC<HabitModalProps> = ({
 
   if (!isOpen) return null;
 
+  const toggleDay = (dayId: number) => {
+    if (activeDays.includes(dayId)) {
+      if (activeDays.length === 1) return; // Must have at least 1 active day
+      const updated = activeDays.filter((d) => d !== dayId);
+      setActiveDays(updated);
+      setTargetDays(updated.length);
+    } else {
+      const updated = [...activeDays, dayId];
+      setActiveDays(updated);
+      setTargetDays(updated.length);
+    }
+  };
+
+  const applySchedulePreset = (preset: 'all' | 'weekdays' | 'weekends') => {
+    if (preset === 'all') {
+      setActiveDays([0, 1, 2, 3, 4, 5, 6]);
+      setTargetDays(7);
+    } else if (preset === 'weekdays') {
+      setActiveDays([1, 2, 3, 4, 5]);
+      setTargetDays(5);
+    } else if (preset === 'weekends') {
+      setActiveDays([0, 6]);
+      setTargetDays(2);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || title.length < 2) {
@@ -97,9 +136,10 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       category,
       color,
       icon,
-      targetDaysPerWeek: targetDays,
+      targetDaysPerWeek: activeDays.length,
       durationMinutes: durationMinutes > 0 ? durationMinutes : 15,
       timerEnabled: true,
+      activeDays,
     });
     onClose();
   };
@@ -203,6 +243,76 @@ export const HabitModal: React.FC<HabitModalProps> = ({
             </div>
           </div>
 
+          {/* Modul 2: Custom Active Days Schedule */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-primary" /> Jadwal Hari Aktif
+              </label>
+              <span className="text-xs font-bold text-primary">
+                {activeDays.length} Hari / Minggu
+              </span>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <button
+                type="button"
+                onClick={() => applySchedulePreset('all')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                  activeDays.length === 7
+                    ? 'bg-primary/20 text-primary border-primary/40'
+                    : 'bg-secondary/40 border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Setiap Hari
+              </button>
+              <button
+                type="button"
+                onClick={() => applySchedulePreset('weekdays')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                  activeDays.length === 5 && !activeDays.includes(0) && !activeDays.includes(6)
+                    ? 'bg-primary/20 text-primary border-primary/40'
+                    : 'bg-secondary/40 border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Hari Kerja (Sen-Jum)
+              </button>
+              <button
+                type="button"
+                onClick={() => applySchedulePreset('weekends')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all ${
+                  activeDays.length === 2 && activeDays.includes(0) && activeDays.includes(6)
+                    ? 'bg-primary/20 text-primary border-primary/40'
+                    : 'bg-secondary/40 border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Akhir Pekan
+              </button>
+            </div>
+
+            {/* Day Pills */}
+            <div className="grid grid-cols-7 gap-1.5">
+              {DAYS_OF_WEEK.map((d) => {
+                const isSelected = activeDays.includes(d.id);
+                return (
+                  <button
+                    key={d.id}
+                    type="button"
+                    onClick={() => toggleDay(d.id)}
+                    className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                      isSelected
+                        ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                        : 'border-border bg-secondary/40 text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Focus Timer Duration Selector */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -271,26 +381,6 @@ export const HabitModal: React.FC<HabitModalProps> = ({
                 />
               ))}
             </div>
-          </div>
-
-          {/* Target Frequency */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-semibold text-foreground">
-                Target Frekuensi Mingguan
-              </label>
-              <span className="text-xs font-bold text-primary">
-                {targetDays} Hari / Minggu
-              </span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="7"
-              value={targetDays}
-              onChange={(e) => setTargetDays(Number(e.target.value))}
-              className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
-            />
           </div>
 
           {/* Footer Actions */}
