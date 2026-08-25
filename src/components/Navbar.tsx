@@ -1,270 +1,103 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
-  Activity, Plus, Moon, Sun, Flame, Trophy, Volume2, VolumeX, 
-  Database, Bell, BellOff, Check, User, Cloud, Snowflake, Share2, Bot, Award 
+  Activity, Plus, Flame, Settings, Sparkles, User 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
-import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
 
 interface NavbarProps {
-  theme: 'dark' | 'light';
-  onToggleTheme: () => void;
   onOpenAddModal: () => void;
-  onOpenBadgesModal: () => void;
-  onOpenBackupModal: () => void;
-  onOpenAuthModal: () => void;
-  onOpenFreezeModal: () => void;
-  onOpenShareModal: () => void;
-  onOpenAICoachModal: () => void;
-  onOpenLeaderboardModal: () => void;
   onOpenProfileModal: () => void;
-  freezeCount: number;
+  onOpenSettingsModal: () => void;
+  streakCount: number;
   userLevel: number;
   userEmail?: string | null;
-  isMuted: boolean;
-  onToggleSound: () => void;
-  streakCount: number;
-  unlockedBadgesCount: number;
-  pendingHabits: string[];
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  theme,
-  onToggleTheme,
   onOpenAddModal,
-  onOpenBadgesModal,
-  onOpenBackupModal,
-  onOpenAuthModal,
-  onOpenFreezeModal,
-  onOpenShareModal,
-  onOpenAICoachModal,
-  onOpenLeaderboardModal,
   onOpenProfileModal,
-  freezeCount,
+  onOpenSettingsModal,
+  streakCount,
   userLevel,
   userEmail,
-  isMuted,
-  onToggleSound,
-  streakCount,
-  unlockedBadgesCount,
-  pendingHabits,
 }) => {
   const todayStr = getTodayString();
   const formattedDate = formatDateToIndonesian(todayStr);
-  const [notificationEnabled, setNotificationEnabled] = useState(
-    typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted'
-  );
-  const [showNotificationToast, setShowNotificationToast] = useState(false);
-
-  const handleToggleNotification = async () => {
-    const granted = await requestNotificationPermission();
-    setNotificationEnabled(granted);
-    if (granted) {
-      sendHabitReminder(pendingHabits.length > 0 ? pendingHabits : ['Semua kebiasaan']);
-      setShowNotificationToast(true);
-      setTimeout(() => setShowNotificationToast(false), 3000);
-    }
-  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-xl transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
-        {/* Left: Logo & Brand */}
+        {/* Left: Brand Identity */}
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
-            <Activity className="h-5 w-5" />
+          <div className="relative group cursor-pointer" onClick={onOpenProfileModal}>
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white transition-transform duration-300 group-hover:scale-105">
+              <Activity className="h-5 w-5 stroke-[2.5]" />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background animate-pulse" />
           </div>
+
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">
+              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
                 HabitFlow
               </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <span className="text-[10px] uppercase font-black tracking-widest px-1.5 py-0.2 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                 PWA
               </span>
             </div>
-            <p className="text-xs text-muted-foreground hidden sm:block">
+            <p className="text-[11px] text-muted-foreground hidden sm:block font-medium">
               {formattedDate}
             </p>
           </div>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Top Streak Pill */}
-          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-semibold">
-            <Flame className="h-4 w-4 fill-amber-500 text-amber-500 animate-pulse" />
-            <span>{streakCount} Hari</span>
-          </div>
-
-          {/* Level / Profile Pill Button */}
+        {/* Right: Consolidated Clean Actions */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          
+          {/* Quick Profile / Streak & Level Pill */}
           <button
             type="button"
             onClick={onOpenProfileModal}
-            aria-label="Buka Profil Pengguna"
-            title="Lihat Level & Profil Pengguna"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="Lihat Profil & Level"
+            title="Klik untuk membuka profil dan pencapaian"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-2xl border border-border bg-secondary/50 hover:bg-secondary text-foreground text-xs font-bold transition-all hover:scale-102 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <span className="px-1.5 py-0.2 rounded-md bg-indigo-500 text-white text-[10px] font-black">
-              Lv {userLevel}
-            </span>
-            <span className="hidden sm:inline">Profil</span>
+            <div className="flex items-center gap-1 text-amber-500">
+              <Flame className="h-4 w-4 fill-amber-500 animate-pulse" />
+              <span>{streakCount}d</span>
+            </div>
+            <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+            <div className="flex items-center gap-1 text-indigo-400">
+              <span className="px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-400 text-[10px] font-black">
+                Lv {userLevel}
+              </span>
+            </div>
           </button>
 
-          {/* Community Leaderboard Button */}
+          {/* Settings Modal Button */}
           <button
             type="button"
-            onClick={onOpenLeaderboardModal}
-            aria-label="Buka Papan Peringkat"
-            title="Lihat Papan Peringkat Komunitas"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={onOpenSettingsModal}
+            aria-label="Buka Pengaturan"
+            title="Pengaturan Tema, Suara, Notifikasi, Akun & Backup"
+            className="p-2.5 rounded-2xl border border-border bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <Trophy className="h-3.5 w-3.5 text-yellow-500" />
-            <span className="hidden sm:inline">Peringkat</span>
+            <Settings className="h-4 w-4" />
           </button>
 
-          {/* AI Coach Button */}
-          <button
-            type="button"
-            onClick={onOpenAICoachModal}
-            aria-label="Buka AI Habit Coach"
-            title="Diagnosis Performa & Rekomendasi Kebiasaan AI"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Bot className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">AI Coach</span>
-          </button>
-
-          {/* Share Poster Card Button */}
-          <button
-            type="button"
-            onClick={onOpenShareModal}
-            aria-label="Bagikan Kartu Pencapaian"
-            title="Ekspor Kartu Grafis Estetis untuk Media Sosial"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Bagikan</span>
-          </button>
-
-          {/* Streak Freeze Pill Button */}
-          <button
-            type="button"
-            onClick={onOpenFreezeModal}
-            aria-label="Buka Streak Freeze"
-            title="Kelola Proteksi Streak Freeze"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Snowflake className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Freeze</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] font-bold">
-              {freezeCount}
-            </span>
-          </button>
-
-          {/* Badges Button */}
-          <button
-            type="button"
-            onClick={onOpenBadgesModal}
-            aria-label="Buka Lencana Pencapaian"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-secondary text-foreground text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Award className="h-4 w-4 text-amber-400" />
-            <span className="hidden sm:inline">Lencana</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
-              {unlockedBadgesCount}
-            </span>
-          </button>
-
-          {/* Notification Reminder Toggle */}
-          <button
-            type="button"
-            onClick={handleToggleNotification}
-            aria-label={notificationEnabled ? 'Pengingat Aktif' : 'Aktifkan Pengingat Browser'}
-            title={notificationEnabled ? 'Pengingat aktif (Klik untuk tes)' : 'Aktifkan pengingat notifikasi'}
-            className={`p-2.5 rounded-xl border transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring ${
-              notificationEnabled
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500'
-                : 'border-border bg-card hover:bg-secondary text-muted-foreground'
-            }`}
-          >
-            {notificationEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-          </button>
-
-          {/* Sound Toggle */}
-          <button
-            type="button"
-            onClick={onToggleSound}
-            aria-label={isMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
-            className="p-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {isMuted ? (
-              <VolumeX className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <Volume2 className="h-4 w-4 text-primary" />
-            )}
-          </button>
-
-          {/* Backup Data Button */}
-          <button
-            type="button"
-            onClick={onOpenBackupModal}
-            aria-label="Backup dan Impor Data"
-            className="p-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none hidden sm:block"
-          >
-            <Database className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-          </button>
-
-          {/* User Auth / Cloud Sync Button */}
-          <button
-            type="button"
-            onClick={onOpenAuthModal}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring ${
-              userEmail
-                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
-                : 'border-border bg-card hover:bg-secondary text-foreground'
-            }`}
-          >
-            {userEmail ? <Cloud className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline max-w-[90px] truncate">
-              {userEmail ? userEmail.split('@')[0] : 'Masuk'}
-            </span>
-          </button>
-
-          {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={onToggleTheme}
-            aria-label="Ganti Tema"
-            className="p-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4 text-amber-400" />
-            ) : (
-              <Moon className="h-4 w-4 text-slate-700" />
-            )}
-          </button>
-
-          {/* Add Habit CTA */}
+          {/* Primary CTA: + Tambah Kebiasaan */}
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs sm:text-sm shadow-md shadow-emerald-500/25 hover:opacity-90 active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="flex items-center gap-1.5 sm:gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-500/20 hover:opacity-95 hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
-            <Plus className="h-4 w-4 stroke-[2.5]" />
+            <Plus className="h-4 w-4 stroke-[3]" />
             <span className="hidden sm:inline">Tambah Kebiasaan</span>
             <span className="sm:hidden">Tambah</span>
           </button>
         </div>
       </div>
-
-      {/* Notification Toast Alert */}
-      {showNotificationToast && (
-        <div className="fixed bottom-5 right-5 z-50 p-3 px-4 rounded-2xl bg-card border border-emerald-500/40 text-emerald-500 text-xs font-semibold shadow-2xl flex items-center gap-2 animate-bounce">
-          <Check className="h-4 w-4" /> Pengingat Notifikasi Berhasil Diaktifkan!
-        </div>
-      )}
     </header>
   );
 };

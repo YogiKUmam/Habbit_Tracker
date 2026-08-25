@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
+import { FeatureHub } from './components/FeatureHub';
 import { StatsOverview } from './components/StatsOverview';
 import { HeatmapGrid } from './components/HeatmapGrid';
 import { HabitCard } from './components/HabitCard';
@@ -14,6 +15,7 @@ import { ShareCardModal } from './components/ShareCardModal';
 import { AICoachModal } from './components/AICoachModal';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { ProfileModal } from './components/ProfileModal';
+import { SettingsModal } from './components/SettingsModal';
 import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
@@ -22,7 +24,7 @@ import { supabase } from './lib/supabase';
 import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
 import { RecommendedHabit } from './lib/aiCoach';
-import { UserProfile, loadUserProfile, calculateUserLevel } from './lib/leaderboard';
+import { UserProfile, loadUserProfile, calculateUserLevel, getCommunityLeaderboard } from './lib/leaderboard';
 import { 
   loadHabits, loadLogs, loadFreezeState, saveFreezeState, 
   getTodayString, calculateHabitStreak, calculateGlobalStats, 
@@ -52,6 +54,8 @@ export function App() {
   const [isAICoachModalOpen, setIsAICoachModalOpen] = useState(false);
   const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  
   const [shareTargetHabit, setShareTargetHabit] = useState<Habit | null>(null);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
@@ -182,6 +186,13 @@ export function App() {
   const badges = useMemo(() => evaluateBadges(habits, logs, stats), [habits, logs, stats]);
   const unlockedBadgesCount = useMemo(() => badges.filter((b) => b.unlocked).length, [badges]);
   const userLevel = useMemo(() => calculateUserLevel(stats, badges), [stats, badges]);
+
+  // Current User Rank in Leaderboard
+  const userRank = useMemo(() => {
+    const lb = getCommunityLeaderboard(userProfile, stats, badges, 'streak');
+    const idx = lb.findIndex((m) => m.isCurrentUser);
+    return idx >= 0 ? idx + 1 : 1;
+  }, [userProfile, stats, badges]);
 
   // List of pending habit titles for notifications
   const pendingHabitTitles = useMemo(() => {
@@ -380,49 +391,49 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors pb-16">
-      {/* 1. Header Navigation */}
+      
+      {/* 1. Sleek Minimalist Header */}
       <Navbar
-        theme={theme}
-        onToggleTheme={toggleTheme}
         onOpenAddModal={() => {
           setEditingHabit(null);
           setIsAddEditModalOpen(true);
         }}
-        onOpenBadgesModal={() => setIsBadgesModalOpen(true)}
-        onOpenBackupModal={() => setIsBackupModalOpen(true)}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onOpenFreezeModal={() => setIsFreezeModalOpen(true)}
-        onOpenShareModal={() => {
-          setShareTargetHabit(null);
-          setIsShareModalOpen(true);
-        }}
-        onOpenAICoachModal={() => setIsAICoachModalOpen(true)}
-        onOpenLeaderboardModal={() => setIsLeaderboardModalOpen(true)}
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
-        freezeCount={freezeState.availableFreezes}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        streakCount={stats.currentStreak}
         userLevel={userLevel.level}
         userEmail={userEmail}
-        isMuted={isMuted}
-        onToggleSound={toggleSound}
-        streakCount={stats.currentStreak}
-        unlockedBadgesCount={unlockedBadgesCount}
-        pendingHabits={pendingHabitTitles}
       />
 
-      {/* 2. Main Content Container */}
+      {/* 2. Main Container with Fluid Spacing */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6 sm:space-y-8">
         
-        {/* Section A: Statistics Cards */}
+        {/* Section A: Feature Navigation Hub (Aesthetic Dock) */}
+        <FeatureHub
+          onOpenAICoach={() => setIsAICoachModalOpen(true)}
+          onOpenLeaderboard={() => setIsLeaderboardModalOpen(true)}
+          onOpenShare={() => {
+            setShareTargetHabit(null);
+            setIsShareModalOpen(true);
+          }}
+          onOpenFreeze={() => setIsFreezeModalOpen(true)}
+          onOpenBadges={() => setIsBadgesModalOpen(true)}
+          freezeCount={freezeState.availableFreezes}
+          unlockedBadgesCount={unlockedBadgesCount}
+          userRank={userRank}
+        />
+
+        {/* Section B: Statistics Glassmorphic Cards */}
         <section aria-label="Ringkasan Statistik">
           <StatsOverview stats={stats} />
         </section>
 
-        {/* Section B: GitHub-Style Heatmap Grid */}
+        {/* Section C: GitHub-Style Heatmap Grid */}
         <section aria-label="Peta Konsistensi Aktivitas">
           <HeatmapGrid data={heatmapData} />
         </section>
 
-        {/* Section C: Daily Habits List & Filters */}
+        {/* Section D: Daily Habits List & Filters */}
         <section aria-label="Daftar Kebiasaan Harian" className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -622,6 +633,21 @@ export function App() {
         badges={badges}
         onSaveProfile={(p) => setUserProfile(p)}
         userEmail={userEmail}
+      />
+
+      {/* 15. Centralized Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        isMuted={isMuted}
+        onToggleSound={toggleSound}
+        onOpenBackupModal={() => setIsBackupModalOpen(true)}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        userEmail={userEmail}
+        onSignOut={handleSignOut}
+        pendingHabits={pendingHabitTitles}
       />
     </div>
   );
