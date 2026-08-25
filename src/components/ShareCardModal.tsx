@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
-  X, Download, Copy, Share2, Sparkles, Flame, CheckCircle, 
-  Layers, Palette, Smartphone, Square, Check 
+  X, Download, Copy, Share2, Sparkles, 
+  Palette, Smartphone, Square, Check 
 } from 'lucide-react';
 import { Habit, HabitStats, DayActivity } from '../types/habit';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
