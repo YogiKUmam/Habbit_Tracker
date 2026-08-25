@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Play, Pause, RotateCcw, Plus, CheckCircle2, Sparkles, 
-  Volume2, VolumeX, MessageSquare, Bell 
+  Volume2, VolumeX, MessageSquare 
 } from 'lucide-react';
 import { Habit } from '../types/habit';
 import { sound } from '../lib/sound';
@@ -99,10 +99,6 @@ export const HabitTimerModal: React.FC<HabitTimerModalProps> = ({
     setSecondsLeft((prev) => prev + additional);
   };
 
-  const handleTestChime = () => {
-    sound.playTimerComplete();
-  };
-
   if (!isOpen || !habit) return null;
 
   // Formatting calculations
@@ -129,21 +125,11 @@ export const HabitTimerModal: React.FC<HabitTimerModalProps> = ({
               type="button"
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? 'Suara Lonceng Aktif' : 'Bisukan Suara Lonceng'}
-              className={`p-1.5 rounded-lg border transition-colors ${
+              className={`p-2 rounded-xl border transition-colors ${
                 soundEnabled ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500' : 'border-border text-muted-foreground'
               }`}
             >
               {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleTestChime}
-              title="Tes Bunyi Lonceng Zen"
-              className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors text-[11px] flex items-center gap-1 font-semibold"
-            >
-              <Bell className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Tes Bunyi</span>
             </button>
           </div>
 
