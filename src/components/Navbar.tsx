@@ -90,14 +90,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right: Actions */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           
-          {/* Streak Flame Pill */}
+          {/* Streak Flame Pill with Level */}
           <div 
             onClick={onOpenProfileModal}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 text-amber-500 text-xs font-bold shadow-xs cursor-pointer hover:bg-amber-500/15 transition-all"
-            title="Streak Konsistensi Harian"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 text-amber-500 text-xs font-bold shadow-xs cursor-pointer hover:bg-amber-500/15 transition-all"
+            title="Streak Konsistensi Harian & Level"
           >
             <Flame className="h-4 w-4 fill-amber-500 animate-pulse" />
             <span>{streakCount}d</span>
+            <span className="md:hidden text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500 font-black">
+              Lv {userLevel.level}
+            </span>
           </div>
 
           {/* Settings Modal Button */}
