@@ -24,8 +24,8 @@ import { Filter, CheckSquare } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 
 export function App() {
-  const [habits, setHabits] = useState<Habit[]>([]);
-  const [logs, setLogs] = useState<HabitLog[]>([]);
+  const [habits, setHabits] = useState<Habit[]>(() => loadHabits());
+  const [logs, setLogs] = useState<HabitLog[]>(() => loadLogs(loadHabits()));
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMuted, setIsMuted] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
