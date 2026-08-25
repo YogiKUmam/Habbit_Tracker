@@ -4,30 +4,30 @@
 
 @layer base {
   :root {
-    /* Soothing Eye-Friendly Light Theme (Soft Pearl Slate - Non-Glaring) */
-    --background: 210 24% 96.5%; /* Soothing Soft Pearl #F3F5F8 */
-    --foreground: 222 47% 12%;   /* Deep Slate #0F172A */
-    --card: 0 0% 100%;           /* Crisp White Card #FFFFFF */
-    --card-foreground: 222 47% 12%;
-    --primary: 158 64% 42%;       /* Emerald Green #10B981 */
+    /* Super-Comfortable Eye-Friendly Light Theme (Warm Soothing Linen Paper - Zero Glare) */
+    --background: 40 25% 95%;     /* Warm Calming Linen #F5F2EB */
+    --foreground: 220 35% 15%;    /* Deep Slate Charcoal #1A2232 */
+    --card: 40 30% 98.5%;        /* Soft Cream Card #FCFAF7 */
+    --card-foreground: 220 35% 15%;
+    --primary: 158 64% 40%;       /* Forest Emerald #059669 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 22% 92%;     /* Soft Pill Slate #E2E8F0 */
-    --secondary-foreground: 215 25% 27%;
-    --muted: 214 22% 92%;
-    --muted-foreground: 215 16% 47%; /* #64748B */
-    --accent: 158 64% 93%;
-    --accent-foreground: 158 64% 30%;
-    --border: 214 20% 88%;        /* Distinct Soft Border #CBD5E1 */
-    --input: 214 20% 88%;
-    --ring: 158 64% 42%;
+    --secondary: 40 18% 90%;      /* Soft Linen Pill #EAE6DE */
+    --secondary-foreground: 220 25% 25%;
+    --muted: 40 18% 90%;
+    --muted-foreground: 220 15% 45%; /* #5F6B7D */
+    --accent: 158 50% 92%;
+    --accent-foreground: 158 64% 28%;
+    --border: 40 15% 85%;         /* Soft Warm Border #DDD8CE */
+    --input: 40 15% 85%;
+    --ring: 158 64% 40%;
     --radius: 1rem;
   }
 
   .dark {
     /* Rich Deep Obsidian Dark Theme */
-    --background: 224 45% 5.5%;  /* Deep Obsidian #090D16 */
+    --background: 224 45% 5.5%;   /* Deep Obsidian #090D16 */
     --foreground: 210 25% 98%;
-    --card: 224 40% 9%;          /* Elevated Card #0E1524 */
+    --card: 224 40% 9%;           /* Elevated Card #0E1524 */
     --card-foreground: 210 25% 98%;
     --primary: 158 64% 50%;
     --primary-foreground: 224 71% 4%;

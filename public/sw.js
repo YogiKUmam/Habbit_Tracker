@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habitflow-cache-v3';
+const CACHE_NAME = 'habitflow-cache-v5';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

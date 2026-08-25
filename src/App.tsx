@@ -400,6 +400,8 @@ export function App() {
         }}
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
         onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
         streakCount={stats.currentStreak}
         userLevel={userLevel}
         userName={userProfile.name}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Activity, Plus, Flame, Settings, User 
+  Activity, Plus, Flame, Settings, User, Moon, Sun 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 import { UserLevelInfo } from '../lib/leaderboard';
@@ -9,6 +9,8 @@ interface NavbarProps {
   onOpenAddModal: () => void;
   onOpenProfileModal: () => void;
   onOpenSettingsModal: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
   streakCount: number;
   userLevel: UserLevelInfo;
   userName: string;
@@ -18,6 +20,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddModal,
   onOpenProfileModal,
   onOpenSettingsModal,
+  theme,
+  onToggleTheme,
   streakCount,
   userLevel,
   userName,
@@ -27,10 +31,10 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/85 backdrop-blur-xl transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-3 sm:gap-4">
         
         {/* Left: Brand Identity */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
           <div 
             onClick={onOpenProfileModal}
             className="relative group cursor-pointer"
@@ -47,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-black text-lg sm:text-xl tracking-tight bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
                 HabitFlow
               </span>
-              <span className="text-[10px] uppercase font-black tracking-widest px-1.5 py-0.2 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <span className="text-[10px] uppercase font-black tracking-widest px-1.5 py-0.2 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 PWA
               </span>
             </div>
@@ -72,13 +76,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-bold text-foreground truncate max-w-[120px]">
                 {userName || 'Habit Champion'}
               </span>
-              <span className="font-bold text-indigo-400">
+              <span className="font-bold text-indigo-500 dark:text-indigo-400">
                 Lv {userLevel.level} • <span className="font-mono text-muted-foreground">{userLevel.currentXP}/{userLevel.nextLevelXP} XP</span>
               </span>
             </div>
 
             {/* Smooth Animated Progress Bar */}
-            <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden border border-white/5">
+            <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden border border-border/30">
               <div 
                 className="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-700 shadow-xs"
                 style={{ width: `${userLevel.progressPercent}%` }}
@@ -88,20 +92,35 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
           
           {/* Streak Flame Pill with Level */}
           <div 
             onClick={onOpenProfileModal}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 text-amber-500 text-xs font-bold shadow-xs cursor-pointer hover:bg-amber-500/15 transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl border border-amber-500/25 bg-amber-500/10 text-amber-600 dark:text-amber-500 text-xs font-bold shadow-xs cursor-pointer hover:bg-amber-500/15 transition-all"
             title="Streak Konsistensi Harian & Level"
           >
             <Flame className="h-4 w-4 fill-amber-500 animate-pulse" />
             <span>{streakCount}d</span>
-            <span className="md:hidden text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500 font-black">
+            <span className="md:hidden text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-600 dark:text-amber-500 font-black">
               Lv {userLevel.level}
             </span>
           </div>
+
+          {/* Quick Theme Toggle (1-Click Switch: Dark / Warm Linen) */}
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            aria-label={theme === 'dark' ? 'Ganti ke Tema Terang Teduh' : 'Ganti ke Tema Gelap'}
+            title={theme === 'dark' ? 'Ganti ke Tema Terang Teduh (Warm Linen)' : 'Ganti ke Tema Gelap (Dark Obsidian)'}
+            className="p-2 sm:p-2.5 rounded-2xl border border-border/80 bg-secondary/50 hover:bg-secondary text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-indigo-500" />
+            )}
+          </button>
 
           {/* Settings Modal Button */}
           <button
@@ -109,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onOpenSettingsModal}
             aria-label="Buka Pengaturan"
             title="Pengaturan Tema, Suara, Notifikasi, Akun & Backup"
-            className="p-2.5 rounded-2xl border border-border bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="p-2 sm:p-2.5 rounded-2xl border border-border/80 bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
             <Settings className="h-4 w-4" />
           </button>
@@ -118,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-500/20 hover:opacity-95 hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-500/20 hover:opacity-95 hover:shadow-emerald-500/30 active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
           >
             <Plus className="h-4 w-4 stroke-[3]" />
             <span className="hidden sm:inline">Tambah Kebiasaan</span>
