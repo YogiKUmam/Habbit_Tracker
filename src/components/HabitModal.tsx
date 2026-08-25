@@ -58,7 +58,6 @@ export const HabitModal: React.FC<HabitModalProps> = ({
   const [category, setCategory] = useState<Category>('Health');
   const [color, setColor] = useState<ColorTheme>('emerald');
   const [icon, setIcon] = useState('Droplets');
-  const [targetDays, setTargetDays] = useState(7);
   const [durationMinutes, setDurationMinutes] = useState<number>(15);
   const [activeDays, setActiveDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +69,6 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       setCategory(editingHabit.category);
       setColor((editingHabit.color as ColorTheme) || 'emerald');
       setIcon(editingHabit.icon);
-      setTargetDays(editingHabit.targetDaysPerWeek);
       setDurationMinutes(editingHabit.durationMinutes || 15);
       setActiveDays(editingHabit.activeDays && editingHabit.activeDays.length > 0 ? editingHabit.activeDays : [0, 1, 2, 3, 4, 5, 6]);
     } else {
@@ -79,7 +77,6 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       setCategory('Health');
       setColor('emerald');
       setIcon('Droplets');
-      setTargetDays(7);
       setDurationMinutes(15);
       setActiveDays([0, 1, 2, 3, 4, 5, 6]);
     }
@@ -102,24 +99,19 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       if (activeDays.length === 1) return; // Must have at least 1 active day
       const updated = activeDays.filter((d) => d !== dayId);
       setActiveDays(updated);
-      setTargetDays(updated.length);
     } else {
       const updated = [...activeDays, dayId];
       setActiveDays(updated);
-      setTargetDays(updated.length);
     }
   };
 
   const applySchedulePreset = (preset: 'all' | 'weekdays' | 'weekends') => {
     if (preset === 'all') {
       setActiveDays([0, 1, 2, 3, 4, 5, 6]);
-      setTargetDays(7);
     } else if (preset === 'weekdays') {
       setActiveDays([1, 2, 3, 4, 5]);
-      setTargetDays(5);
     } else if (preset === 'weekends') {
       setActiveDays([0, 6]);
-      setTargetDays(2);
     }
   };
 
