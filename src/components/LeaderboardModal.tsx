@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   X, Trophy, Flame, CheckCircle2, Award, Crown, 
-  Sparkles, Users, Star, ArrowUp 
+  Users, ArrowUp 
 } from 'lucide-react';
 import { HabitStats } from '../types/habit';
 import { Badge } from '../types/badge';
@@ -31,8 +31,6 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   }, [userProfile, stats, badges, filter]);
 
   const top3 = leaderboard.slice(0, 3);
-  const restRankings = leaderboard.slice(3);
-
   const currentUserRank = leaderboard.findIndex((m) => m.isCurrentUser) + 1;
 
   if (!isOpen) return null;

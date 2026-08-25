@@ -22,7 +22,7 @@ import { supabase } from './lib/supabase';
 import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
 import { RecommendedHabit } from './lib/aiCoach';
-import { UserProfile, loadUserProfile, saveUserProfile, calculateUserLevel } from './lib/leaderboard';
+import { UserProfile, loadUserProfile, calculateUserLevel } from './lib/leaderboard';
 import { 
   loadHabits, loadLogs, loadFreezeState, saveFreezeState, 
   getTodayString, calculateHabitStreak, calculateGlobalStats, 

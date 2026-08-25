@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  X, User, Sparkles, Award, Flame, CheckCircle2, 
-  Share2, Save, Check, Star, Shield 
+  X, User, Award, Share2, Save, Check 
 } from 'lucide-react';
 import { HabitStats } from '../types/habit';
 import { Badge } from '../types/badge';
@@ -206,9 +205,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   key={badge.id}
                   className="p-2.5 rounded-xl bg-secondary/40 border border-border flex items-center gap-2"
                 >
-                  <span className="text-xl">{badge.icon}</span>
+                  <span className="text-xl">🏆</span>
                   <div className="min-w-0">
-                    <p className="font-bold text-[11px] text-foreground truncate">{badge.title}</p>
+                    <p className="font-bold text-[11px] text-foreground truncate">{badge.name}</p>
                     <p className="text-[9px] text-muted-foreground truncate">{badge.category}</p>
                   </div>
                 </div>
