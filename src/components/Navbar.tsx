@@ -3,14 +3,14 @@ import {
   Activity, Plus, Flame, Settings, User 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
-import { UserLevelProgress } from '../lib/leaderboard';
+import { UserLevelInfo } from '../lib/leaderboard';
 
 interface NavbarProps {
   onOpenAddModal: () => void;
   onOpenProfileModal: () => void;
   onOpenSettingsModal: () => void;
   streakCount: number;
-  userLevel: UserLevelProgress;
+  userLevel: UserLevelInfo;
   userName: string;
 }
 
