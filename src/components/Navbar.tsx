@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Activity, Plus, Flame, Settings, Sparkles, User 
+  Activity, Plus, Flame, Settings 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 
@@ -10,7 +10,6 @@ interface NavbarProps {
   onOpenSettingsModal: () => void;
   streakCount: number;
   userLevel: number;
-  userEmail?: string | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,7 +18,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettingsModal,
   streakCount,
   userLevel,
-  userEmail,
 }) => {
   const todayStr = getTodayString();
   const formattedDate = formatDateToIndonesian(todayStr);

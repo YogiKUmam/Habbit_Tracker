@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, Settings, Moon, Sun, Volume2, VolumeX, Bell, BellOff, 
-  Database, User, Cloud, LogOut, Check, Sparkles 
+  Database, User, Cloud, LogOut, Check 
 } from 'lucide-react';
 import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
 
