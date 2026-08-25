@@ -1,0 +1,18 @@
+{
+  "name": "HabitFlow — Habit & Activity Tracker",
+  "short_name": "HabitFlow",
+  "description": "Pelacak kebiasaan modern dengan visual heatmap konsistensi, streak, dan analitik lengkap.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2v20'/><path d='m17 5-5-3-5 3'/><path d='m17 19-5 3-5-3'/><circle cx='12' cy='12' r='4'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
