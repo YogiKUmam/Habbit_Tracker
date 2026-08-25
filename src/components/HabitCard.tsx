@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Check, Flame, MoreVertical, Trash2, Edit3, Droplets, BookOpen, 
-  Dumbbell, Code2, Heart, Sparkles, Brain, Coffee, Smile, Trophy, BarChart2, MessageSquare 
+  Dumbbell, Code2, Heart, Sparkles, Brain, Coffee, Smile, Trophy, BarChart2, MessageSquare, Timer 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Habit, ColorTheme } from '../types/habit';
@@ -17,6 +17,7 @@ interface HabitCardProps {
   onDelete: (habitId: string) => void;
   onViewDetail: (habit: Habit) => void;
   onOpenNote: (habit: Habit) => void;
+  onStartTimer: (habit: Habit) => void;
 }
 
 export const HabitCard: React.FC<HabitCardProps> = ({
@@ -30,6 +31,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   onDelete,
   onViewDetail,
   onOpenNote,
+  onStartTimer,
 }) => {
   const [showMenu, setShowMenu] = React.useState(false);
 
@@ -89,84 +91,107 @@ export const HabitCard: React.FC<HabitCardProps> = ({
           borderActive: 'border-rose-500/40',
         };
       case 'cyan':
-      default:
         return {
           badge: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
           iconBg: 'bg-cyan-500/15 text-cyan-500',
           btnActive: 'bg-cyan-500 text-white shadow-cyan-500/25',
           borderActive: 'border-cyan-500/40',
         };
+      default:
+        return {
+          badge: 'bg-primary/10 text-primary border-primary/20',
+          iconBg: 'bg-primary/15 text-primary',
+          btnActive: 'bg-primary text-primary-foreground shadow-primary/25',
+          borderActive: 'border-primary/40',
+        };
     }
   };
 
-  const themeStyles = getColorStyles(habit.color);
+  const themeStyles = getColorStyles(habit.color as ColorTheme);
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className={`relative p-5 rounded-2xl border bg-card shadow-sm hover:shadow-md transition-all duration-300 ${
-        isCompletedToday ? `${themeStyles.borderActive} bg-card/90` : 'border-border'
+      className={`group relative p-4 sm:p-5 rounded-3xl border bg-card transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 ${
+        isCompletedToday ? themeStyles.borderActive : 'border-border hover:border-border/80'
       }`}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         {/* Left: Icon & Info */}
-        <div
-          onClick={() => onViewDetail(habit)}
-          className="flex items-start gap-3.5 flex-1 min-w-0 cursor-pointer group"
-        >
-          <div className={`p-3 rounded-2xl ${themeStyles.iconBg} flex-shrink-0 group-hover:scale-105 transition-transform`}>
+        <div className="flex items-start gap-3.5 flex-1 min-w-0">
+          <div className={`p-3 rounded-2xl ${themeStyles.iconBg} transition-transform duration-300 group-hover:scale-105 flex-shrink-0`}>
             {getIcon(habit.icon)}
           </div>
-          <div className="min-w-0 flex-1">
+
+          <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${themeStyles.badge}`}>
+              <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${themeStyles.badge}`}>
                 {habit.category}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 Target: {habit.targetDaysPerWeek}x/minggu
               </span>
+              {habit.durationMinutes && (
+                <span className="text-[11px] font-semibold text-emerald-500 flex items-center gap-1">
+                  <Timer className="h-3 w-3" /> {habit.durationMinutes}m
+                </span>
+              )}
             </div>
-            
-            <h3 className={`mt-1 font-bold text-base tracking-tight truncate group-hover:text-primary transition-colors ${isCompletedToday ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+
+            <h3
+              onClick={() => onViewDetail(habit)}
+              className={`font-bold text-base tracking-tight truncate cursor-pointer transition-colors hover:text-primary ${
+                isCompletedToday ? 'line-through text-muted-foreground' : 'text-foreground'
+              }`}
+            >
               {habit.title}
             </h3>
 
             {habit.description && (
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+              <p className="text-xs text-muted-foreground line-clamp-1">
                 {habit.description}
               </p>
             )}
 
-            {/* Today's Reflection Note snippet */}
+            {/* Today Note Badge */}
             {todayNote && (
               <div 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenNote(habit);
-                }}
-                className="mt-2 p-1.5 px-2.5 rounded-xl bg-secondary/70 border border-border text-[11px] text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors"
+                onClick={() => onOpenNote(habit)}
+                className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-secondary/80 border border-border/80 text-[11px] text-foreground cursor-pointer hover:bg-secondary transition-colors max-w-full"
               >
-                <MessageSquare className="h-3 w-3 text-primary flex-shrink-0" />
+                <MessageSquare className="h-3 w-3 text-emerald-500 flex-shrink-0" />
                 <span className="truncate italic">"{todayNote}"</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right: Actions & Completion Toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Note Quick Button */}
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Timer Launcher Button (if habit has duration or timer enabled) */}
+          <button
+            type="button"
+            onClick={() => onStartTimer(habit)}
+            title={`Mulai Timer Fokus (${habit.durationMinutes || 15} Menit)`}
+            className="p-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-muted-foreground hover:text-emerald-500 transition-colors flex items-center gap-1 text-xs font-semibold"
+          >
+            <Timer className="h-4 w-4" />
+            <span className="hidden xl:inline">{habit.durationMinutes || 15}m</span>
+          </button>
+
+          {/* Daily Note Button */}
           <button
             type="button"
             onClick={() => onOpenNote(habit)}
-            title={todayNote ? 'Edit catatan refleksi' : 'Tambah catatan refleksi hari ini'}
-            className={`p-2 rounded-xl border transition-all ${
+            aria-label="Catatan Refleksi Harian"
+            title={todayNote ? 'Edit catatan hari ini' : 'Tambah catatan refleksi hari ini'}
+            className={`p-2.5 rounded-xl border transition-colors ${
               todayNote
-                ? 'border-primary/40 bg-primary/10 text-primary'
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500'
                 : 'border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
@@ -192,6 +217,16 @@ export const HabitCard: React.FC<HabitCardProps> = ({
                   exit={{ opacity: 0, scale: 0.9, y: 5 }}
                   className="absolute right-0 mt-1 w-36 py-1 bg-card border border-border rounded-xl shadow-xl z-20"
                 >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMenu(false);
+                      onStartTimer(habit);
+                    }}
+                    className="w-full px-3 py-1.5 text-xs text-left flex items-center gap-2 hover:bg-secondary text-foreground"
+                  >
+                    <Timer className="h-3.5 w-3.5 text-emerald-500" /> Mulai Timer
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

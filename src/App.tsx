@@ -8,6 +8,7 @@ import { BadgesModal } from './components/BadgesModal';
 import { HabitDetailModal } from './components/HabitDetailModal';
 import { DataBackupModal } from './components/DataBackupModal';
 import { DailyNotesModal } from './components/DailyNotesModal';
+import { HabitTimerModal } from './components/HabitTimerModal';
 import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
@@ -38,6 +39,7 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
+  const [activeTimerHabit, setActiveTimerHabit] = useState<Habit | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
 
@@ -216,6 +218,14 @@ export function App() {
     }
   };
 
+  // Auto-complete habit from Timer
+  const handleCompleteHabitFromTimer = async (habitId: string) => {
+    const alreadyDone = logs.some((l) => l.habitId === habitId && l.date === todayStr && l.completed);
+    if (!alreadyDone) {
+      await handleToggleHabitToday(habitId);
+    }
+  };
+
   // Save or Update Habit
   const handleSaveHabit = async (habitData: Partial<Habit>) => {
     let updated: Habit[];
@@ -230,6 +240,8 @@ export function App() {
         color: habitData.color || 'emerald',
         icon: habitData.icon || 'Droplets',
         targetDaysPerWeek: habitData.targetDaysPerWeek || 7,
+        durationMinutes: habitData.durationMinutes || 15,
+        timerEnabled: true,
         archived: false,
         createdAt: new Date().toISOString(),
       };
@@ -399,6 +411,7 @@ export function App() {
                       onDelete={handleDeleteHabit}
                       onViewDetail={(h) => setSelectedDetailHabit(h)}
                       onOpenNote={(h) => setNoteTargetHabit(h)}
+                      onStartTimer={(h) => setActiveTimerHabit(h)}
                     />
                   );
                 })}
@@ -456,6 +469,15 @@ export function App() {
         onClose={() => setIsAuthModalOpen(false)}
         userEmail={userEmail}
         onSignOut={handleSignOut}
+      />
+
+      {/* 9. Focus & Routine Timer Modal */}
+      <HabitTimerModal
+        isOpen={!!activeTimerHabit}
+        onClose={() => setActiveTimerHabit(null)}
+        habit={activeTimerHabit}
+        onCompleteHabit={handleCompleteHabitFromTimer}
+        onOpenNote={(h) => setNoteTargetHabit(h)}
       />
     </div>
   );

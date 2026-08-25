@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, Sparkles, Droplets, BookOpen, Dumbbell, Code2, 
-  Heart, Brain, Coffee, Smile, Trophy 
+  Heart, Brain, Coffee, Smile, Trophy, Timer 
 } from 'lucide-react';
 import { Habit, Category, ColorTheme } from '../types/habit';
 
@@ -35,6 +35,8 @@ const ICONS = [
   { name: 'Sparkles', label: 'Lainnya' },
 ];
 
+const DURATION_PRESETS = [5, 10, 15, 25, 45, 60];
+
 export const HabitModal: React.FC<HabitModalProps> = ({
   isOpen,
   onClose,
@@ -47,6 +49,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
   const [color, setColor] = useState<ColorTheme>('emerald');
   const [icon, setIcon] = useState('Droplets');
   const [targetDays, setTargetDays] = useState(7);
+  const [durationMinutes, setDurationMinutes] = useState<number>(15);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,9 +57,10 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       setTitle(editingHabit.title);
       setDescription(editingHabit.description || '');
       setCategory(editingHabit.category);
-      setColor(editingHabit.color);
+      setColor((editingHabit.color as ColorTheme) || 'emerald');
       setIcon(editingHabit.icon);
       setTargetDays(editingHabit.targetDaysPerWeek);
+      setDurationMinutes(editingHabit.durationMinutes || 15);
     } else {
       setTitle('');
       setDescription('');
@@ -64,6 +68,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       setColor('emerald');
       setIcon('Droplets');
       setTargetDays(7);
+      setDurationMinutes(15);
     }
     setError(null);
   }, [editingHabit, isOpen]);
@@ -93,6 +98,8 @@ export const HabitModal: React.FC<HabitModalProps> = ({
       color,
       icon,
       targetDaysPerWeek: targetDays,
+      durationMinutes: durationMinutes > 0 ? durationMinutes : 15,
+      timerEnabled: true,
     });
     onClose();
   };
@@ -120,10 +127,10 @@ export const HabitModal: React.FC<HabitModalProps> = ({
         <div className="flex items-center justify-between pb-4 border-b border-border">
           <div>
             <h2 className="text-lg font-bold text-foreground">
-              {editingHabit ? 'Edit Kebiasaan' : 'Buat Kebiasaan Baru'}
+              {editingHabit ? 'Edit Kebiasaan' : 'Tambah Kebiasaan Baru'}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Tentukan target konsistensi dan visual kebiasaan Anda
+              Tentukan target konsistensi dan durasi fokus Anda
             </p>
           </div>
           <button
@@ -136,40 +143,40 @@ export const HabitModal: React.FC<HabitModalProps> = ({
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           {error && (
-            <div className="p-3 text-xs font-semibold text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+            <div className="p-3 text-xs font-semibold text-destructive bg-destructive/10 border border-destructive/20 rounded-xl">
               {error}
             </div>
           )}
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">
-              Nama Kebiasaan <span className="text-rose-500">*</span>
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Nama Kebiasaan <span className="text-primary">*</span>
             </label>
             <input
               type="text"
-              placeholder="Contoh: Minum 2L Air Putih / Meditasi"
+              placeholder="Contoh: Membaca 15 Menit, Minum Air..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-input bg-secondary/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-input bg-secondary/40 text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+              autoFocus
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">
-              Deskripsi Singkat (Opsional)
+            <label className="block text-xs font-semibold text-foreground mb-1">
+              Catatan / Pengingat (Opsional)
             </label>
             <input
               type="text"
-              placeholder="Alasan atau catatan pengingat"
+              placeholder="Contoh: Segelas setelah bangun tidur"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-input bg-secondary/50 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-input bg-secondary/40 text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
@@ -184,13 +191,41 @@ export const HabitModal: React.FC<HabitModalProps> = ({
                   key={cat}
                   type="button"
                   onClick={() => setCategory(cat)}
-                  className={`py-2 px-3 rounded-xl text-xs font-medium border transition-all ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-semibold transition-all ${
                     category === cat
-                      ? 'bg-primary/10 border-primary text-primary font-bold'
-                      : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-xs'
+                      : 'border-border bg-secondary/40 text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Focus Timer Duration Selector */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Timer className="h-3.5 w-3.5 text-emerald-500" /> Durasi Timer Fokus
+              </label>
+              <span className="text-xs font-bold text-emerald-500">
+                {durationMinutes} Menit
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+              {DURATION_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setDurationMinutes(preset)}
+                  className={`flex-1 py-1.5 px-2.5 rounded-xl border text-xs font-bold transition-all ${
+                    durationMinutes === preset
+                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs'
+                      : 'border-border bg-secondary/40 text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {preset}m
                 </button>
               ))}
             </div>

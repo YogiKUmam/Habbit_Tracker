@@ -51,6 +51,8 @@ export class SupabaseStorageAdapter implements StorageAdapter {
         targetDaysPerWeek: item.target_days_per_week,
         archived: item.archived,
         createdAt: item.created_at,
+        durationMinutes: item.duration_minutes || 15,
+        timerEnabled: item.timer_enabled ?? true,
       }));
 
       // Cache locally for offline availability
