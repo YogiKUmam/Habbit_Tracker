@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Activity, Plus, Moon, Sun, Flame, Trophy, Volume2, VolumeX, 
-  Database, Bell, BellOff, Check, User, Cloud, Snowflake, Share2, Bot 
+  Database, Bell, BellOff, Check, User, Cloud, Snowflake, Share2, Bot, Award 
 } from 'lucide-react';
 import { formatDateToIndonesian, getTodayString } from '../lib/storage';
 import { requestNotificationPermission, sendHabitReminder } from '../lib/notifications';
@@ -16,7 +16,10 @@ interface NavbarProps {
   onOpenFreezeModal: () => void;
   onOpenShareModal: () => void;
   onOpenAICoachModal: () => void;
+  onOpenLeaderboardModal: () => void;
+  onOpenProfileModal: () => void;
   freezeCount: number;
+  userLevel: number;
   userEmail?: string | null;
   isMuted: boolean;
   onToggleSound: () => void;
@@ -35,7 +38,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFreezeModal,
   onOpenShareModal,
   onOpenAICoachModal,
+  onOpenLeaderboardModal,
+  onOpenProfileModal,
   freezeCount,
+  userLevel,
   userEmail,
   isMuted,
   onToggleSound,
@@ -87,10 +93,36 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right: Actions */}
         <div className="flex items-center gap-2 sm:gap-2.5">
           {/* Top Streak Pill */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-semibold">
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-semibold">
             <Flame className="h-4 w-4 fill-amber-500 text-amber-500 animate-pulse" />
-            <span>{streakCount} Hari Streak</span>
+            <span>{streakCount} Hari</span>
           </div>
+
+          {/* Level / Profile Pill Button */}
+          <button
+            type="button"
+            onClick={onOpenProfileModal}
+            aria-label="Buka Profil Pengguna"
+            title="Lihat Level & Profil Pengguna"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span className="px-1.5 py-0.2 rounded-md bg-indigo-500 text-white text-[10px] font-black">
+              Lv {userLevel}
+            </span>
+            <span className="hidden sm:inline">Profil</span>
+          </button>
+
+          {/* Community Leaderboard Button */}
+          <button
+            type="button"
+            onClick={onOpenLeaderboardModal}
+            aria-label="Buka Papan Peringkat"
+            title="Lihat Papan Peringkat Komunitas"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-yellow-500/30 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Trophy className="h-3.5 w-3.5 text-yellow-500" />
+            <span className="hidden sm:inline">Peringkat</span>
+          </button>
 
           {/* AI Coach Button */}
           <button
@@ -138,7 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-label="Buka Lencana Pencapaian"
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-secondary text-foreground text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Trophy className="h-4 w-4 text-amber-400" />
+            <Award className="h-4 w-4 text-amber-400" />
             <span className="hidden sm:inline">Lencana</span>
             <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
               {unlockedBadgesCount}

@@ -12,6 +12,8 @@ import { HabitTimerModal } from './components/HabitTimerModal';
 import { StreakFreezeModal } from './components/StreakFreezeModal';
 import { ShareCardModal } from './components/ShareCardModal';
 import { AICoachModal } from './components/AICoachModal';
+import { LeaderboardModal } from './components/LeaderboardModal';
+import { ProfileModal } from './components/ProfileModal';
 import { AuthModal } from './components/AuthModal';
 import { EmptyState } from './components/EmptyState';
 import { triggerStreakConfetti, triggerAllCompletedCelebration } from './components/Confetti';
@@ -20,6 +22,7 @@ import { supabase } from './lib/supabase';
 import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
 import { RecommendedHabit } from './lib/aiCoach';
+import { UserProfile, loadUserProfile, saveUserProfile, calculateUserLevel } from './lib/leaderboard';
 import { 
   loadHabits, loadLogs, loadFreezeState, saveFreezeState, 
   getTodayString, calculateHabitStreak, calculateGlobalStats, 
@@ -36,6 +39,7 @@ export function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isMuted, setIsMuted] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => loadUserProfile());
   
   // Modals state
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
@@ -46,6 +50,8 @@ export function App() {
   const [isFreezeModalOpen, setIsFreezeModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAICoachModalOpen, setIsAICoachModalOpen] = useState(false);
+  const [isLeaderboardModalOpen, setIsLeaderboardModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [shareTargetHabit, setShareTargetHabit] = useState<Habit | null>(null);
   const [selectedDetailHabit, setSelectedDetailHabit] = useState<Habit | null>(null);
   const [noteTargetHabit, setNoteTargetHabit] = useState<Habit | null>(null);
@@ -81,11 +87,25 @@ export function App() {
     // Check existing Supabase session and subscribe to Realtime sync
     if (supabase) {
       supabase.auth.getSession().then(({ data: { session } }) => {
-        setUserEmail(session?.user?.email || null);
+        const email = session?.user?.email || null;
+        setUserEmail(email);
+        if (email) {
+          setUserProfile((prev) => ({
+            ...prev,
+            name: prev.name === 'Habit Champion' ? email.split('@')[0] : prev.name,
+          }));
+        }
       });
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUserEmail(session?.user?.email || null);
+        const email = session?.user?.email || null;
+        setUserEmail(email);
+        if (email) {
+          setUserProfile((prev) => ({
+            ...prev,
+            name: prev.name === 'Habit Champion' ? email.split('@')[0] : prev.name,
+          }));
+        }
       });
 
       // Realtime multi-device sync channel
@@ -161,6 +181,7 @@ export function App() {
   const stats = useMemo(() => calculateGlobalStats(habits, logs, freezeState), [habits, logs, freezeState]);
   const badges = useMemo(() => evaluateBadges(habits, logs, stats), [habits, logs, stats]);
   const unlockedBadgesCount = useMemo(() => badges.filter((b) => b.unlocked).length, [badges]);
+  const userLevel = useMemo(() => calculateUserLevel(stats, badges), [stats, badges]);
 
   // List of pending habit titles for notifications
   const pendingHabitTitles = useMemo(() => {
@@ -353,6 +374,7 @@ export function App() {
     localStorage.removeItem('habitflow_habits_v1');
     localStorage.removeItem('habitflow_logs_v1');
     localStorage.removeItem('habitflow_freeze_v1');
+    localStorage.removeItem('habitflow_profile_v1');
     await refreshData();
   };
 
@@ -375,7 +397,10 @@ export function App() {
           setIsShareModalOpen(true);
         }}
         onOpenAICoachModal={() => setIsAICoachModalOpen(true)}
+        onOpenLeaderboardModal={() => setIsLeaderboardModalOpen(true)}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
         freezeCount={freezeState.availableFreezes}
+        userLevel={userLevel.level}
         userEmail={userEmail}
         isMuted={isMuted}
         onToggleSound={toggleSound}
@@ -577,6 +602,26 @@ export function App() {
         logs={logs}
         stats={stats}
         onAddRecommendedHabit={handleAddRecommendedHabit}
+      />
+
+      {/* 13. Community Leaderboard Modal */}
+      <LeaderboardModal
+        isOpen={isLeaderboardModalOpen}
+        onClose={() => setIsLeaderboardModalOpen(false)}
+        userProfile={userProfile}
+        stats={stats}
+        badges={badges}
+      />
+
+      {/* 14. User Profile & Level Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        userProfile={userProfile}
+        stats={stats}
+        badges={badges}
+        onSaveProfile={(p) => setUserProfile(p)}
+        userEmail={userEmail}
       />
     </div>
   );
