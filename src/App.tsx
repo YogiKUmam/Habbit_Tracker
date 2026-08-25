@@ -16,7 +16,7 @@ import { supabase } from './lib/supabase';
 import { localAdapter, supabaseAdapter } from './lib/adapter';
 import { evaluateBadges } from './types/badge';
 import { 
-  getTodayString, calculateHabitStreak, calculateGlobalStats, 
+  loadHabits, loadLogs, getTodayString, calculateHabitStreak, calculateGlobalStats, 
   generateHeatmapData, getTheme, saveTheme 
 } from './lib/storage';
 import { Habit, HabitLog, Category } from './types/habit';
