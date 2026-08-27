@@ -116,8 +116,8 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      className={`group relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border bg-card/95 transition-all duration-300 hover:shadow-md space-y-3 ${
-        isCompletedToday ? themeStyles.borderActive : 'border-border/80 hover:border-border'
+      className={`group relative p-4 sm:p-5 rounded-2xl sm:rounded-[28px] apple-glass apple-card-hover space-y-3.5 transition-all ${
+        isCompletedToday ? themeStyles.borderActive : 'border-border/60'
       }`}
     >
       {/* Top Header Row: Icon + Meta Tags + Quick Actions */}
@@ -128,7 +128,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             {getIcon(habit.icon)}
           </div>
 
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${themeStyles.badge}`}>
+          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${themeStyles.badge}`}>
             {habit.category}
           </span>
 
@@ -151,7 +151,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             type="button"
             onClick={() => onStartTimer(habit)}
             title={`Mulai Timer Fokus (${habit.durationMinutes || 15} Menit)`}
-            className="px-2 py-1.5 sm:px-2.5 sm:py-2 rounded-xl sm:rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all flex items-center gap-1 text-[11px] font-bold shadow-xs active:scale-95"
+            className="tactile-btn px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl sm:rounded-2xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 text-[11px] font-bold shadow-xs"
           >
             <Timer className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             <span>{habit.durationMinutes || 15}m</span>
@@ -163,10 +163,10 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             onClick={() => onOpenNote(habit)}
             aria-label="Catatan Refleksi Harian"
             title={todayNote ? 'Edit catatan hari ini' : 'Tambah catatan refleksi hari ini'}
-            className={`p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border transition-all active:scale-95 ${
+            className={`tactile-btn p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border transition-all ${
               todayNote
                 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                : 'border-border bg-secondary/60 text-muted-foreground hover:text-foreground'
+                : 'border-border/60 bg-secondary/60 text-muted-foreground hover:text-foreground'
             }`}
           >
             <MessageSquare className="h-3.5 w-3.5" />
@@ -178,7 +178,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               type="button"
               onClick={() => setShowMenu(!showMenu)}
               aria-label="Opsi kebiasaan"
-              className="p-1.5 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+              className="tactile-btn p-1.5 sm:p-2 rounded-xl text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
               <MoreVertical className="h-4 w-4" />
             </button>
@@ -189,7 +189,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
                   initial={{ opacity: 0, scale: 0.9, y: 5 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: 5 }}
-                  className="absolute right-0 mt-1.5 w-40 p-1 bg-card border border-border rounded-2xl shadow-2xl z-20 space-y-0.5"
+                  className="absolute right-0 mt-1.5 w-40 p-1.5 apple-glass rounded-2xl shadow-xl z-20 space-y-0.5 border border-border"
                 >
                   <button
                     type="button"
@@ -246,7 +246,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Main Tactile Toggle Button */}
+          {/* Main Tactile Check Button */}
           <motion.button
             type="button"
             whileTap={{ scale: 0.88 }}
@@ -254,15 +254,15 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             aria-label={isCompletedToday ? 'Tandai belum selesai hari ini' : 'Tandai selesai hari ini'}
             className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl flex items-center justify-center border transition-all duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-ring ${
               isCompletedToday
-                ? `${themeStyles.btnActive} border-transparent shadow-md`
-                : 'border-border bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground'
+                ? `${themeStyles.btnActive} border-transparent shadow-md shadow-emerald-500/25`
+                : 'border-border/80 bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground'
             }`}
           >
             {isCompletedToday ? (
               <motion.div
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 22 }}
               >
                 <Check className="h-4 w-4 sm:h-5 sm:w-5 stroke-[3]" />
               </motion.div>
@@ -273,7 +273,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         </div>
       </div>
 
-      {/* Middle Row: Full Width Habit Title & Description (Never Squashed) */}
+      {/* Middle Row: Full Width Habit Title & Description */}
       <div className="space-y-1">
         <h3
           onClick={() => onViewDetail(habit)}
@@ -285,7 +285,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         </h3>
 
         {habit.description && (
-          <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2">
+          <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             {habit.description}
           </p>
         )}
@@ -303,7 +303,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
       </div>
 
       {/* Bottom Row: 7-Day History Dots & Streak Counter */}
-      <div className="pt-2.5 border-t border-border/60 flex items-center justify-between text-xs">
+      <div className="pt-3 border-t border-border/40 flex items-center justify-between text-xs">
         {/* Past 7 days history */}
         <div className="flex items-center gap-1 sm:gap-1.5">
           <span className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground mr-0.5">7 Hari:</span>
@@ -325,7 +325,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
         </div>
 
         {/* Streak Counter */}
-        <div className="flex items-center gap-1 text-amber-500 font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-xs text-[11px] sm:text-xs">
+        <div className="flex items-center gap-1 text-amber-500 font-bold px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-xs text-[11px] sm:text-xs">
           <Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-amber-500" />
           <span>{streak.current}d</span>
         </div>

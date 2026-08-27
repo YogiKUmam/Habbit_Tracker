@@ -4,43 +4,95 @@
 
 @layer base {
   :root {
-    /* Super-Comfortable Eye-Friendly Light Theme (Warm Soothing Linen Paper - Zero Glare) */
-    --background: 40 25% 95%;     /* Warm Calming Linen #F5F2EB */
-    --foreground: 220 35% 15%;    /* Deep Slate Charcoal #1A2232 */
-    --card: 40 30% 98.5%;        /* Soft Cream Card #FCFAF7 */
-    --card-foreground: 220 35% 15%;
-    --primary: 158 64% 40%;       /* Forest Emerald #059669 */
+    /* Soothing Warm Linen & Soft Paper Light Theme (Zero Glare, Ultra Comfortable for Eyes) */
+    --background: 40 22% 92.5%;     /* Soothing Matte Linen #EDE9DF */
+    --foreground: 222 30% 16%;      /* Deep Slate Charcoal #1C2433 */
+    --card: 40 28% 97.5%;          /* Soft Ivory Cream Card #FCFAF7 */
+    --card-foreground: 222 30% 16%;
+    --primary: 152 68% 38%;         /* Forest Apple Emerald #1F9E58 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 18% 90%;      /* Soft Linen Pill #EAE6DE */
-    --secondary-foreground: 220 25% 25%;
-    --muted: 40 18% 90%;
-    --muted-foreground: 220 15% 45%; /* #5F6B7D */
-    --accent: 158 50% 92%;
-    --accent-foreground: 158 64% 28%;
-    --border: 40 15% 85%;         /* Soft Warm Border #DDD8CE */
-    --input: 40 15% 85%;
-    --ring: 158 64% 40%;
-    --radius: 1rem;
+    --secondary: 40 18% 86%;        /* Soft Linen Pill #E2DDD2 */
+    --secondary-foreground: 222 25% 22%;
+    --muted: 40 18% 86%;
+    --muted-foreground: 220 12% 44%; /* #5F6878 */
+    --accent: 152 50% 90%;
+    --accent-foreground: 152 68% 25%;
+    --border: 40 15% 82%;           /* Warm Hairline Border #D5CFBF */
+    --input: 40 15% 82%;
+    --ring: 152 68% 38%;
+    --radius: 1.25rem;
   }
 
   .dark {
-    /* Rich Deep Obsidian Dark Theme */
-    --background: 224 45% 5.5%;   /* Deep Obsidian #090D16 */
+    /* Deep Obsidian macOS / iOS Dark Theme */
+    --background: 224 45% 5.5%;     /* Deep Obsidian #090D16 */
     --foreground: 210 25% 98%;
-    --card: 224 40% 9%;           /* Elevated Card #0E1524 */
+    --card: 224 35% 10%;            /* #101624 */
     --card-foreground: 210 25% 98%;
-    --primary: 158 64% 50%;
+    --primary: 142 71% 48%;         /* #22C55E */
     --primary-foreground: 224 71% 4%;
     --secondary: 215 28% 14%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 28% 14%;
     --muted-foreground: 217 14% 65%;
-    --accent: 158 64% 18%;
-    --accent-foreground: 158 64% 75%;
-    --border: 215 28% 16%;
-    --input: 215 28% 16%;
-    --ring: 158 64% 50%;
+    --accent: 142 64% 18%;
+    --accent-foreground: 142 64% 75%;
+    --border: 215 25% 16%;
+    --input: 215 25% 16%;
+    --ring: 142 71% 48%;
   }
+}
+
+/* Apple-Grade Frosted Glass & Layered Shadows */
+.apple-glass {
+  background: rgba(252, 250, 247, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 3px 0 rgba(0, 0, 0, 0.02),
+    0 12px 30px -6px rgba(45, 35, 20, 0.04);
+}
+
+.dark .apple-glass {
+  background: rgba(16, 22, 36, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+    0 1px 3px 0 rgba(0, 0, 0, 0.3),
+    0 16px 40px -8px rgba(0, 0, 0, 0.5);
+}
+
+.apple-card-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.apple-card-hover:hover {
+  transform: translateY(-2px) scale(1.004);
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 1),
+    0 4px 14px 0 rgba(0, 0, 0, 0.03),
+    0 22px 48px -10px rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.dark .apple-card-hover:hover {
+  transform: translateY(-2px) scale(1.004);
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+    0 6px 20px 0 rgba(0, 0, 0, 0.4),
+    0 24px 50px -10px rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Tactile Spring Micro-Interactions */
+.tactile-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tactile-btn:active {
+  transform: scale(0.96);
 }
 
 /* Custom scrollbars */

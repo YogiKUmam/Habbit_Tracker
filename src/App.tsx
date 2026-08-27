@@ -436,32 +436,39 @@ export function App() {
         </section>
 
         {/* Section D: Daily Habits List & Filters */}
-        <section aria-label="Daftar Kebiasaan Harian" className="space-y-4">
+        <section aria-label="Daftar Kebiasaan Harian" className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
                 <CheckSquare className="h-4 w-4" />
               </div>
-              <h2 className="text-lg font-bold tracking-tight text-foreground">
-                Kebiasaan Hari Ini
-              </h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
-                {filteredHabits.length}
-              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                    Kebiasaan Hari Ini
+                  </h2>
+                  <span className="text-[11px] font-bold px-2 py-0.2 rounded-full bg-secondary text-muted-foreground border border-border/60">
+                    {filteredHabits.length}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-medium hidden sm:block">
+                  Centang untuk menyelesaikan target harian Anda
+                </p>
+              </div>
             </div>
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-              <Filter className="h-3.5 w-3.5 text-muted-foreground mr-1 flex-shrink-0" />
+            {/* Category Filter Pills Capsule */}
+            <div className="flex items-center gap-1.5 p-1 bg-secondary/60 rounded-full border border-border/40 overflow-x-auto max-w-full">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground ml-2 mr-0.5 flex-shrink-0" />
               {categoriesList.map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                  className={`tactile-btn px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                     selectedCategory === cat
-                      ? 'bg-primary text-primary-foreground font-bold shadow-xs'
-                      : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
+                      ? 'bg-card text-foreground font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-border/80'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {cat}
@@ -477,7 +484,7 @@ export function App() {
               setIsAddEditModalOpen(true);
             }} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               <AnimatePresence>
                 {filteredHabits.map((habit) => {
                   const todayLog = logs.find(
