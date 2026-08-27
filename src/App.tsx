@@ -194,12 +194,47 @@ export function App() {
     return idx >= 0 ? idx + 1 : 1;
   }, [userProfile, stats, badges]);
 
-  // List of pending habit titles for notifications
+  // List of pending habit titles for notifications & App Badging
   const pendingHabitTitles = useMemo(() => {
     return habits
       .filter((h) => !h.archived && !logs.some((l) => l.habitId === h.id && l.date === todayStr && l.completed))
       .map((h) => h.title);
   }, [habits, logs, todayStr]);
+
+  // PWA App Icon Badging API (Shows pending habits count on Home Screen icon)
+  useEffect(() => {
+    if ('setAppBadge' in navigator && typeof (navigator as any).setAppBadge === 'function') {
+      const pendingCount = pendingHabitTitles.length;
+      if (pendingCount > 0) {
+        (navigator as any).setAppBadge(pendingCount).catch(() => {});
+      } else {
+        (navigator as any).clearAppBadge().catch(() => {});
+      }
+    }
+  }, [pendingHabitTitles.length]);
+
+  // Handle PWA Home Screen Quick Action Shortcuts (?action=add, ?action=today, ?action=stats, ?action=ai)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    if (action) {
+      // Clear URL parameter so it doesn't re-trigger on reload
+      window.history.replaceState({}, '', window.location.pathname);
+
+      if (action === 'add') {
+        setEditingHabit(null);
+        setIsAddEditModalOpen(true);
+      } else if (action === 'ai') {
+        setIsAICoachModalOpen(true);
+      } else if (action === 'stats') {
+        const statsEl = document.getElementById('stats-overview');
+        statsEl?.scrollIntoView({ behavior: 'smooth' });
+      } else if (action === 'today') {
+        const habitsEl = document.getElementById('habits-list');
+        habitsEl?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, []);
 
   const heatmapData = useMemo(() => generateHeatmapData(habits, logs, 91, freezeState), [habits, logs, freezeState]);
 
@@ -426,7 +461,7 @@ export function App() {
         />
 
         {/* Section B: Statistics Glassmorphic Cards */}
-        <section aria-label="Ringkasan Statistik">
+        <section id="stats-overview" aria-label="Ringkasan Statistik">
           <StatsOverview stats={stats} />
         </section>
 
@@ -436,7 +471,7 @@ export function App() {
         </section>
 
         {/* Section D: Daily Habits List & Filters */}
-        <section aria-label="Daftar Kebiasaan Harian" className="space-y-5">
+        <section id="habits-list" aria-label="Daftar Kebiasaan Harian" className="space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-xs">
